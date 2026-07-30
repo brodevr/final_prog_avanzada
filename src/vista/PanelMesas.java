@@ -153,17 +153,24 @@ public class PanelMesas extends JPanel {
 		Color fondo = ocupada ? EstiloUI.C_OCUPADA : EstiloUI.C_LIBRE;
 		String estado = ocupada ? "OCUPADA" : "LIBRE";
 
-		JButton boton = new JButton(
-				"<html><center>"
-				+ "<span style='font-size:16pt; font-weight:bold;'>Mesa " + mesa.getNumero() + "</span><br>"
-				+ "<span style='font-size:9pt;'>" + mesa.getCapacidad() + " pers. &bull; " + mesa.getSector() + "</span><br>"
-				+ "<span style='font-size:9pt; font-weight:bold;'>" + estado + "</span>"
-				+ "</center></html>");
-
+		String html = "<html><center>"
+				+ "<span style='font-size:16pt; font-weight:bold; color:white;'>Mesa " + mesa.getNumero() + "</span><br>"
+				+ "<span style='font-size:9pt; color:white;'>" + mesa.getCapacidad() + " pers. &bull; " + mesa.getSector() + "</span><br>"
+				+ "<span style='font-size:9pt; font-weight:bold; color:white;'>" + estado + "</span>"
+				+ "</center></html>";
+		JButton boton = new JButton(html) {
+			@Override protected void paintComponent(java.awt.Graphics g) {
+				g.setColor(getModel().isPressed() ? fondo.darker()
+						: getModel().isRollover() ? fondo.brighter() : fondo);
+				g.fillRect(0, 0, getWidth(), getHeight());
+				super.paintComponent(g);
+			}
+		};
 		boton.setPreferredSize(new Dimension(160, 110));
 		boton.setBackground(fondo);
 		boton.setForeground(Color.WHITE);
-		boton.setOpaque(true);
+		boton.setOpaque(false);
+		boton.setContentAreaFilled(false);
 		boton.setBorderPainted(false);
 		boton.setFocusPainted(false);
 		boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

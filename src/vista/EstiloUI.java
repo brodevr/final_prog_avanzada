@@ -43,11 +43,19 @@ public final class EstiloUI {
     // ------------------------------------------------------------------
 
     private static JButton btnSolido(String texto, Color fondo, Color fg) {
-        JButton b = new JButton(texto);
+        JButton b = new JButton(texto) {
+            @Override protected void paintComponent(Graphics g) {
+                g.setColor(getModel().isPressed()
+                        ? fondo.darker() : getModel().isRollover() ? fondo.brighter() : fondo);
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paintComponent(g);
+            }
+        };
         b.setFont(F_NEGRITA);
         b.setBackground(fondo);
         b.setForeground(fg);
-        b.setOpaque(true);
+        b.setOpaque(false);
+        b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -73,11 +81,18 @@ public final class EstiloUI {
 
     /** Botón con borde fino para acciones secundarias. */
     public static JButton btnBorde(String texto) {
-        JButton b = new JButton(texto);
+        JButton b = new JButton(texto) {
+            @Override protected void paintComponent(Graphics g) {
+                g.setColor(getModel().isRollover() ? new Color(245, 235, 220) : Color.WHITE);
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paintComponent(g);
+            }
+        };
         b.setFont(F_NORMAL);
         b.setForeground(C_CAFE);
         b.setBackground(Color.WHITE);
-        b.setOpaque(true);
+        b.setOpaque(false);
+        b.setContentAreaFilled(false);
         b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(
@@ -88,11 +103,19 @@ public final class EstiloUI {
 
     /** Botón para la barra de navegación sobre fondo oscuro. */
     public static JButton btnNavbar(String texto) {
-        JButton b = new JButton(texto);
+        final Color bg = new Color(65, 42, 26);
+        JButton b = new JButton(texto) {
+            @Override protected void paintComponent(Graphics g) {
+                g.setColor(getModel().isRollover() ? bg.brighter() : bg);
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paintComponent(g);
+            }
+        };
         b.setFont(F_NAVBAR);
         b.setForeground(new Color(210, 185, 155));
-        b.setBackground(new Color(65, 42, 26));
-        b.setOpaque(true);
+        b.setBackground(bg);
+        b.setOpaque(false);
+        b.setContentAreaFilled(false);
         b.setBorderPainted(false);
         b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -173,6 +196,19 @@ public final class EstiloUI {
         h.setPreferredSize(new Dimension(0, 32));
         h.setBorder(null);
         h.setReorderingAllowed(false);
+        h.setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable tbl, Object val,
+                    boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(tbl, val, sel, foc, row, col);
+                setBackground(new Color(65, 42, 26));
+                setForeground(Color.WHITE);
+                setFont(F_NEGRITA);
+                setOpaque(true);
+                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+                return this;
+            }
+        });
 
         t.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override

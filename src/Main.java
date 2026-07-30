@@ -31,10 +31,12 @@ public class Main {
 		}
 
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			// El L&F del sistema (Windows) ignora setBackground/setForeground en
+			// JButton y JTableHeader, haciendo invisible el texto blanco. Metal
+			// respeta todos los colores personalizados sin depender del tema nativo.
+			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 		} catch (Exception e) {
-			// Si falla, Swing usa su aspecto por defecto: no es un error grave.
-			System.err.println("No se pudo aplicar el aspecto del sistema.");
+			System.err.println("No se pudo aplicar el aspecto visual.");
 		}
 
 		SwingUtilities.invokeLater(new Runnable() {
