@@ -1,0 +1,193 @@
+%% =====================================================================
+%% DIAGRAMA DE CLASES UML - Sistema de Gestion de Restaurante
+%% Examen Final - Programacion Avanzada
+%%
+%% Para verlo: pegar el contenido en https://mermaid.live
+%% =====================================================================
+classDiagram
+    direction TB
+
+    %% ---------------- Interfaces ----------------
+    class Imprimible {
+        <<interface>>
+        +generarTexto() String
+    }
+
+    class Descuento {
+        <<interface>>
+        +calcularDescuento(double) double
+        +getDescripcion() String
+    }
+
+    %% ---------------- Jerarquia de productos ----------------
+    class ItemMenu {
+        <<abstract>>
+        -int id
+        -String nombre
+        -double precioBase
+        -boolean disponible
+        +calcularPrecioFinal()* double
+        +getDescripcionDetallada()* String
+        +getMinutosDemora()* int
+        +getTipo()* String
+    }
+
+    class Plato {
+        -int minutosPreparacion
+        -boolean entrada
+        +calcularPrecioFinal() double
+        +getMinutosDemora() int
+    }
+
+    class Bebida {
+        -int mililitros
+        -boolean alcoholica
+        +calcularPrecioFinal() double
+        +getMinutosDemora() int
+    }
+
+    %% ---------------- Nucleo transaccional ----------------
+    class Pedido {
+        -int id
+        -LocalDateTime fechaApertura
+        -LocalDateTime fechaCierre
+        -EstadoPedido estado
+        -List~DetallePedido~ detalles
+        +agregarItem(ItemMenu, int)
+        +quitarItem(int)
+        +calcularSubtotal() double
+        +calcularTotal() double
+        +calcularDemoraEstimada() int
+        +cerrar()
+        +anular()
+        +generarTexto() String
+    }
+
+    class DetallePedido {
+        -int cantidad
+        -double precioUnitario
+        +calcularSubtotal() double
+    }
+
+    class EstadoPedido {
+        <<enumeration>>
+        ABIERTO
+        CERRADO
+        ANULADO
+    }
+
+    class Mesa {
+        -int numero
+        -int capacidad
+        -String sector
+        -boolean ocupada
+    }
+
+    class Empleado {
+        -int id
+        -String nombre
+        -String usuario
+        -String clave
+        -boolean activo
+    }
+
+    %% ---------------- Reportes ----------------
+    class ReporteVentas {
+        -String titulo
+        -LocalDate desde
+        -LocalDate hasta
+        -List~String~ lineas
+        +generarTexto() String
+    }
+
+    class RankingItem {
+        -String nombre
+        -int cantidad
+        -double monto
+        +compareTo(RankingItem) int
+    }
+
+    %% ---------------- Estrategias de descuento ----------------
+    class SinDescuento
+    class DescuentoPorcentaje
+    class DescuentoMontoFijo
+    class DescuentoRegistrado
+
+    %% ---------------- Persistencia ----------------
+    class ConexionBD {
+        <<singleton>>
+        -static ConexionBD instancia
+        -Connection conexion
+        +static getInstancia() ConexionBD
+        +getConexion() Connection
+    }
+
+    class ItemMenuDAO
+    class PedidoDAO
+    class MesaDAO
+    class EmpleadoDAO
+    class ReporteDAO
+
+    %% ---------------- Controladores ----------------
+    class Caja {
+        <<singleton>>
+        +abrirMesa(Mesa, Empleado) Pedido
+        +agregarItem(Pedido, ItemMenu, int)
+        +cerrarCuenta(Pedido)
+        +anularCuenta(Pedido)
+    }
+
+    class Restaurante {
+        <<singleton>>
+        -Map~Integer,Mesa~ mesasPorNumero
+        +iniciarSesion(String, String) Empleado
+        +altaPlato(...)
+        +altaBebida(...)
+    }
+
+    class ColeccionUtil {
+        +static obtenerMaximo~T~(List~T~) T
+        +static primerosN~T~(List~T~, int) List~T~
+    }
+
+    %% ---------------- Relaciones ----------------
+    ItemMenu <|-- Plato
+    ItemMenu <|-- Bebida
+
+    Imprimible <|.. Pedido
+    Imprimible <|.. ReporteVentas
+
+    Descuento <|.. SinDescuento
+    Descuento <|.. DescuentoPorcentaje
+    Descuento <|.. DescuentoMontoFijo
+    Descuento <|.. DescuentoRegistrado
+
+    Pedido "1" *-- "0..*" DetallePedido
+    Pedido --> EstadoPedido
+    Pedido --> Descuento
+    Pedido "0..*" --> "1" Mesa
+    Pedido "0..*" --> "1" Empleado
+    DetallePedido "0..*" --> "1" ItemMenu
+
+    ReporteDAO ..> RankingItem
+    ReporteDAO ..> ReporteVentas
+    ReporteDAO ..> ColeccionUtil
+    Pedido ..> ColeccionUtil
+
+    ItemMenuDAO ..> ItemMenu
+    PedidoDAO ..> Pedido
+    MesaDAO ..> Mesa
+    EmpleadoDAO ..> Empleado
+
+    ItemMenuDAO --> ConexionBD
+    PedidoDAO --> ConexionBD
+    MesaDAO --> ConexionBD
+    EmpleadoDAO --> ConexionBD
+    ReporteDAO --> ConexionBD
+
+    Caja --> PedidoDAO
+    Caja --> MesaDAO
+    Caja --> ReporteDAO
+    Restaurante --> ItemMenuDAO
+    Restaurante --> MesaDAO
+    Restaurante --> EmpleadoDAO

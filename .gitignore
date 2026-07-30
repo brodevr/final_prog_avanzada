@@ -1,0 +1,34 @@
+# ---- Compilados de Java ----
+bin/
+build/
+out/
+*.class
+
+# ---- Eclipse ----
+# .project y .classpath SI se versionan a proposito: hacen que el proyecto
+# se importe con un solo clic desde File > Import > Existing Projects.
+.settings/
+.metadata/
+.recommenders/
+*.launch
+
+# ---- IntelliJ / NetBeans / VS Code (por si alguien lo abre con otro IDE) ----
+.idea/
+*.iml
+nbproject/
+.vscode/
+
+# ---- Dependencias ----
+# El driver de MySQL no se versiona: cada uno lo agrega a su Build Path.
+lib/
+*.jar
+
+# ---- Sistema operativo ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- Temporales ----
+*.log
+*.tmp
+*~

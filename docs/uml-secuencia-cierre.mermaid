@@ -1,0 +1,53 @@
+%% =====================================================================
+%% DIAGRAMA DE SECUENCIA - Ciclo de apertura y cierre de una mesa
+%% Muestra el recorrido Vista -> Controlador -> DAO -> MySQL
+%% =====================================================================
+sequenceDiagram
+    actor Mozo
+    participant PM as PanelMesas
+    participant PP as PanelPedido
+    participant C as Caja (Singleton)
+    participant P as Pedido
+    participant PD as PedidoDAO
+    participant BD as MySQL
+
+    Note over Mozo,BD: 1. APERTURA
+    Mozo->>PM: clic en la mesa 3
+    PM->>C: buscarCuentaAbierta(3)
+    C->>PD: buscarAbiertoPorMesa(3)
+    PD->>BD: SELECT ... WHERE estado='ABIERTO'
+    BD-->>PD: sin resultados
+    PD-->>C: null
+    C-->>PM: null
+    PM->>C: abrirMesa(mesa3, mozo)
+    C->>P: new Pedido(mesa3, mozo)
+    P-->>C: pedido ABIERTO
+    C->>PD: insertar(pedido)
+    PD->>BD: INSERT INTO pedido + detalle
+    C->>PD: actualizarOcupada(3, true)
+    C-->>PM: pedido
+    PM->>PP: cargarPedido(pedido)
+
+    Note over Mozo,BD: 2. CARGA DE CONSUMOS
+    Mozo->>PP: agregar 2 milanesas
+    PP->>C: agregarItem(pedido, milanesa, 2)
+    C->>P: agregarItem(milanesa, 2)
+    P->>P: verificarAbierto()
+    P->>P: new DetallePedido(item, 2)
+    Note right of P: aca se llama<br/>calcularPrecioFinal()<br/>polimorficamente
+    C->>PD: actualizar(pedido)
+    PD->>BD: UPDATE pedido + reescribe detalles
+
+    Note over Mozo,BD: 3. CIERRE
+    Mozo->>PP: clic en Cobrar y cerrar
+    PP->>C: cerrarCuenta(pedido)
+    C->>P: cerrar()
+    P->>P: estado = CERRADO, fechaCierre = ahora
+    C->>PD: actualizar(pedido)
+    PD->>BD: UPDATE pedido SET estado='CERRADO'
+    C->>PD: actualizarOcupada(3, false)
+    PD->>BD: UPDATE mesa SET ocupada=FALSE
+    C-->>PP: ok
+    PP->>P: generarTexto()
+    P-->>PP: ticket
+    PP-->>Mozo: muestra el ticket
