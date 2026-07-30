@@ -1,4 +1,4 @@
-# Sistema de Gestión de Restaurante
+# Sistema de Gestión de Cafetería
 
 **Examen Final — Programación Avanzada**
 Carrera: Analista en Sistemas · Escuela Superior de Arte Multimedial Da Vinci
@@ -9,9 +9,9 @@ Tecnologías: Java (Swing) · MySQL · JDBC
 
 ## 1. Descripción general y tema elegido
 
-El sistema administra la operación diaria de un restaurante: el estado de las mesas del salón, la carta de productos, el personal, y el ciclo completo de una cuenta desde que se abre la mesa hasta que se cobra.
+El sistema administra la operación diaria de **Cafetería La Esquina**: el estado de las mesas del salón, la carta de productos, el personal, y el ciclo completo de una cuenta desde que se abre la mesa hasta que se cobra.
 
-El tema se eligió porque su proceso central tiene un **ciclo de apertura y cierre nativo del dominio**: en un restaurante literalmente se "abre" y se "cierra" una mesa. Eso permite cumplir el requisito 2 de la consigna sin forzar la interpretación. Además genera datos ricos para reportes: qué se vendió, cuándo, quién lo atendió y por cuánto.
+El tema se eligió porque su proceso central tiene un **ciclo de apertura y cierre nativo del dominio**: en una cafetería literalmente se "abre" y se "cierra" una mesa. Eso permite cumplir el requisito 2 de la consigna sin forzar la interpretación. Además genera datos ricos para reportes: qué se vendió, cuándo, quién lo atendió y por cuánto.
 
 ### Entidades principales
 
