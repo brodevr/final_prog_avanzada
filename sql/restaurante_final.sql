@@ -306,6 +306,233 @@ INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUE
 UPDATE mesa SET ocupada = TRUE WHERE numero = 7;
 
 -- =====================================================================
+-- HISTORIAL 7 DIAS: cafeteria activa con clientes reales
+-- Precios unitarios = precio FINAL (con recargo ya incluido)
+-- =====================================================================
+
+-- === HACE 7 DIAS ===
+
+-- P13: Mesa 4, Ana — cafe de manana
+-- cortado(12)×1=2000 + tostada_palta(9)×1=5720 → 7720
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(4, 4, DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 540 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 580 MINUTE,
+	       'CERRADO', 7720.00, 0.00, 'Sin descuento', 7720.00);
+SET @p13 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p13, 12, 1, 2000.00), (@p13, 9, 1, 5720.00);
+
+-- P14: Mesa 9 barra, Carlos — expreso rapido
+-- cafe_espresso(11)×2=3600
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(9, 5, DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 660 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 680 MINUTE,
+	       'CERRADO', 3600.00, 0.00, 'Sin descuento', 3600.00);
+SET @p14 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p14, 11, 2, 1800.00);
+
+-- P15: Mesa 3, Martin — salon tarde
+-- cafe_leche(13)×3=7200 + tostado(3)×2=7700 + brownie(7)×1=4950 → 19850
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(3, 1, DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 840 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 930 MINUTE,
+	       'CERRADO', 19850.00, 0.00, 'Sin descuento', 19850.00);
+SET @p15 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p15, 13, 3, 2400.00), (@p15, 3, 2, 3850.00), (@p15, 7, 1, 4950.00);
+
+-- P16: Mesa 6 terraza, Lucia — merienda
+-- latte(15)×2=6400 + cheesecake(8)×2=11000 → 17400
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(6, 2, DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 1020 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 7 DAY) + INTERVAL 1110 MINUTE,
+	       'CERRADO', 17400.00, 0.00, 'Sin descuento', 17400.00);
+SET @p16 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p16, 15, 2, 3200.00), (@p16, 8, 2, 5500.00);
+
+-- === HACE 6 DIAS ===
+
+-- P17: Mesa 2, Diego — desayuno express
+-- cafe_espresso(11)×3=5400 + medialuna(1)×3=6600 → 12000
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(2, 3, DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 510 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 540 MINUTE,
+	       'CERRADO', 12000.00, 0.00, 'Sin descuento', 12000.00);
+SET @p17 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p17, 11, 3, 1800.00), (@p17, 1, 3, 2200.00);
+
+-- P18: Mesa 5, Ana — grupo de trabajo, desc 10%
+-- cappuccino(14)×4=11200 + croissant(2)×3=12540 → 23740, desc=2374, total=21366
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(5, 4, DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 600 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 690 MINUTE,
+	       'CERRADO', 23740.00, 2374.00, 'Descuento 10%', 21366.00);
+SET @p18 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p18, 14, 4, 2800.00), (@p18, 2, 3, 4180.00);
+
+-- P19: Mesa 8 terraza, Carlos — merienda
+-- jugo(19)×1=3200 + sandwich(4)×1=3300 + muffin(6)×1=2400 → 8900
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(8, 5, DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 900 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 945 MINUTE,
+	       'CERRADO', 8900.00, 0.00, 'Sin descuento', 8900.00);
+SET @p19 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p19, 19, 1, 3200.00), (@p19, 4, 1, 3300.00), (@p19, 6, 1, 2400.00);
+
+-- P20: Mesa 11 privado, Martin — evento noche, cupon $4000
+-- cerveza(20)×6=31050 + focaccia(10)×4=12800 → 43850, cupon=4000, total=39850
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(11, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 1140 MINUTE,
+	        DATE_SUB(CURDATE(), INTERVAL 6 DAY) + INTERVAL 1260 MINUTE,
+	        'CERRADO', 43850.00, 4000.00, 'Cupon de $4000.00', 39850.00);
+SET @p20 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p20, 20, 6, 5175.00), (@p20, 10, 4, 3200.00);
+
+-- === HACE 5 DIAS ===
+
+-- P21: Mesa 1, Lucia — desayuno tranquilo
+-- cortado(12)×2=4000 + empanada(5)×2=3200 → 7200
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(1, 2, DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 540 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 570 MINUTE,
+	       'CERRADO', 7200.00, 0.00, 'Sin descuento', 7200.00);
+SET @p21 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p21, 12, 2, 2000.00), (@p21, 5, 2, 1600.00);
+
+-- P22: Mesa 9 barra, Diego — cafe al paso
+-- cafe_espresso(11)×1=1800 + medialuna(1)×1=2200 → 4000
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(9, 3, DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 630 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 650 MINUTE,
+	       'CERRADO', 4000.00, 0.00, 'Sin descuento', 4000.00);
+SET @p22 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p22, 11, 1, 1800.00), (@p22, 1, 1, 2200.00);
+
+-- P23: Mesa 4, Ana — almuerzo de trabajo
+-- latte(15)×3=9600 + sandwich(4)×2=6600 → 16200
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(4, 4, DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 780 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 870 MINUTE,
+	       'CERRADO', 16200.00, 0.00, 'Sin descuento', 16200.00);
+SET @p23 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p23, 15, 3, 3200.00), (@p23, 4, 2, 3300.00);
+
+-- P24: Mesa 7 terraza, Carlos — merienda
+-- te_surtido(17)×2=4000 + muffin(6)×3=7200 → 11200
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(7, 5, DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 960 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 5 DAY) + INTERVAL 1020 MINUTE,
+	       'CERRADO', 11200.00, 0.00, 'Sin descuento', 11200.00);
+SET @p24 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p24, 17, 2, 2000.00), (@p24, 6, 3, 2400.00);
+
+-- === HACE 4 DIAS ===
+
+-- P25: Mesa 3, Martin — grupo desayuno
+-- cafe_espresso(11)×4=7200 + medialuna(1)×4=8800 → 16000
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(3, 1, DATE_SUB(CURDATE(), INTERVAL 4 DAY) + INTERVAL 510 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 4 DAY) + INTERVAL 555 MINUTE,
+	       'CERRADO', 16000.00, 0.00, 'Sin descuento', 16000.00);
+SET @p25 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p25, 11, 4, 1800.00), (@p25, 1, 4, 2200.00);
+
+-- P26: Mesa 6 terraza, Lucia — brunch
+-- cappuccino(14)×1=2800 + tostada_palta(9)×1=5720 + agua(18)×1=1200 → 9720
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(6, 2, DATE_SUB(CURDATE(), INTERVAL 4 DAY) + INTERVAL 660 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 4 DAY) + INTERVAL 720 MINUTE,
+	       'CERRADO', 9720.00, 0.00, 'Sin descuento', 9720.00);
+SET @p26 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p26, 14, 1, 2800.00), (@p26, 9, 1, 5720.00), (@p26, 18, 1, 1200.00);
+
+-- P27: Mesa 12 privado, Diego — evento noche, desc 20%
+-- cerveza(20)×4=20700 + croissant(2)×3=12540 + brownie(7)×2=9900 → 43140, desc=8628, total=34512
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(12, 3, DATE_SUB(CURDATE(), INTERVAL 4 DAY) + INTERVAL 1140 MINUTE,
+	        DATE_SUB(CURDATE(), INTERVAL 4 DAY) + INTERVAL 1290 MINUTE,
+	        'CERRADO', 43140.00, 8628.00, 'Descuento 20%', 34512.00);
+SET @p27 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p27, 20, 4, 5175.00), (@p27, 2, 3, 4180.00), (@p27, 7, 2, 4950.00);
+
+-- === HACE 2 DIAS (adicional) ===
+
+-- P28: Mesa 9 barra, Carlos — manana
+-- cafe_espresso(11)×3=5400 + medialuna(1)×2=4400 → 9800
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(9, 5, DATE_SUB(CURDATE(), INTERVAL 2 DAY) + INTERVAL 480 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 2 DAY) + INTERVAL 500 MINUTE,
+	       'CERRADO', 9800.00, 0.00, 'Sin descuento', 9800.00);
+SET @p28 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p28, 11, 3, 1800.00), (@p28, 1, 2, 2200.00);
+
+-- P29: Mesa 5, Martin — reunion almuerzo, desc 10%
+-- cafe_leche(13)×5=12000 + tostado(3)×4=15400 → 27400, desc=2740, total=24660
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(5, 1, DATE_SUB(CURDATE(), INTERVAL 2 DAY) + INTERVAL 660 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 2 DAY) + INTERVAL 750 MINUTE,
+	       'CERRADO', 27400.00, 2740.00, 'Descuento 10%', 24660.00);
+SET @p29 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p29, 13, 5, 2400.00), (@p29, 3, 4, 3850.00);
+
+-- === AYER (adicional) ===
+
+-- P30: Mesa 8 terraza, Diego — desayuno
+-- cafe_espresso(11)×2=3600 + medialuna(1)×2=4400 → 8000
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(8, 3, DATE_SUB(CURDATE(), INTERVAL 1 DAY) + INTERVAL 480 MINUTE,
+	       DATE_SUB(CURDATE(), INTERVAL 1 DAY) + INTERVAL 510 MINUTE,
+	       'CERRADO', 8000.00, 0.00, 'Sin descuento', 8000.00);
+SET @p30 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p30, 11, 2, 1800.00), (@p30, 1, 2, 2200.00);
+
+-- P31: Mesa 11 privado, Martin — reunion empresa, desc 10%
+-- cappuccino(14)×6=16800 + focaccia(10)×4=12800 → 29600, desc=2960, total=26640
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(11, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY) + INTERVAL 780 MINUTE,
+	        DATE_SUB(CURDATE(), INTERVAL 1 DAY) + INTERVAL 900 MINUTE,
+	        'CERRADO', 29600.00, 2960.00, 'Descuento 10%', 26640.00);
+SET @p31 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p31, 14, 6, 2800.00), (@p31, 10, 4, 3200.00);
+
+-- === HOY — MESAS ABIERTAS ADICIONALES ===
+
+-- P32: Mesa 2, Diego — recien llegaron (15 min)
+-- cafe_espresso(11)×2=3600 + medialuna(1)×2=4400 → 8000
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(2, 3, DATE_SUB(NOW(), INTERVAL 15 MINUTE), NULL, 'ABIERTO', 8000.00, 0.00, 'Sin descuento', 8000.00);
+SET @p32 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p32, 11, 2, 1800.00), (@p32, 1, 2, 2200.00);
+
+-- P33: Mesa 9 barra, Carlos — cortado al paso (10 min)
+-- cortado(12)×1=2000
+INSERT INTO pedido (mesa_numero, empleado_id, fecha_apertura, fecha_cierre, estado, subtotal, descuento, descuento_desc, total) VALUES
+	(9, 5, DATE_SUB(NOW(), INTERVAL 10 MINUTE), NULL, 'ABIERTO', 2000.00, 0.00, 'Sin descuento', 2000.00);
+SET @p33 = LAST_INSERT_ID();
+INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUES
+	(@p33, 12, 1, 2000.00);
+
+UPDATE mesa SET ocupada = TRUE WHERE numero IN (2, 9);
+
+-- =====================================================================
 -- VERIFICACION RAPIDA
 -- =====================================================================
 SELECT 'Empleados cargados'    AS control, COUNT(*) AS cantidad FROM empleado
