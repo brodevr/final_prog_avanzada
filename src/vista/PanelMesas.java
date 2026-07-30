@@ -36,8 +36,8 @@ public class PanelMesas extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Color VERDE_LIBRE = new Color(198, 239, 206);
-	private static final Color ROJO_OCUPADA = new Color(255, 199, 206);
+	private static final Color VERDE_LIBRE  = new Color(0, 153, 76);
+	private static final Color ROJO_OCUPADA = new Color(200, 30, 30);
 
 	private VentanaPrincipal ventana;
 	private JPanel grillaMesas;
@@ -120,10 +120,12 @@ public class PanelMesas extends JPanel {
 		JLabel libre = new JLabel("  LIBRE  ");
 		libre.setOpaque(true);
 		libre.setBackground(VERDE_LIBRE);
+		libre.setForeground(Color.WHITE);
 
 		JLabel ocupada = new JLabel("  OCUPADA  ");
 		ocupada.setOpaque(true);
 		ocupada.setBackground(ROJO_OCUPADA);
+		ocupada.setForeground(Color.WHITE);
 
 		leyenda.add(new JLabel("Referencias:"));
 		leyenda.add(libre);
@@ -164,14 +166,18 @@ public class PanelMesas extends JPanel {
 
 	private JButton crearBotonMesa(final Mesa mesa) {
 		String estado = mesa.isOcupada() ? "OCUPADA" : "LIBRE";
+		Color fondo = mesa.isOcupada() ? ROJO_OCUPADA : VERDE_LIBRE;
 
-		JButton boton = new JButton("<html><center><b>Mesa " + mesa.getNumero() + "</b><br>"
-				+ mesa.getCapacidad() + " pers.<br>" + mesa.getSector() + "<br>"
-				+ estado + "</center></html>");
+		JButton boton = new JButton("<html><center><b style='font-size:13pt'>Mesa " + mesa.getNumero()
+				+ "</b><br><font size=2>" + mesa.getCapacidad() + " pers. &bull; "
+				+ mesa.getSector() + "<br><b>" + estado + "</b></font></center></html>");
 
 		boton.setPreferredSize(new Dimension(140, 100));
-		boton.setBackground(mesa.isOcupada() ? ROJO_OCUPADA : VERDE_LIBRE);
+		boton.setBackground(fondo);
+		boton.setForeground(Color.WHITE);
 		boton.setOpaque(true);
+		boton.setBorderPainted(false);
+		boton.setFocusPainted(false);
 		boton.setHorizontalAlignment(SwingConstants.CENTER);
 
 		boton.addActionListener(new ActionListener() {

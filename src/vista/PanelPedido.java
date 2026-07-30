@@ -1,6 +1,7 @@
 package vista;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -130,7 +131,8 @@ public class PanelPedido extends JPanel {
 		lblSubtotal = new JLabel("Subtotal: $0.00");
 		lblDescuento = new JLabel("Descuento: $0.00");
 		lblTotal = new JLabel("TOTAL: $0.00");
-		lblTotal.setFont(new Font("SansSerif", Font.BOLD, 18));
+		lblTotal.setFont(new Font("SansSerif", Font.BOLD, 20));
+		lblTotal.setForeground(new Color(0, 120, 0));
 		lblDemora = new JLabel("Demora estimada: 0 min");
 
 		totales.add(lblSubtotal);
@@ -156,8 +158,20 @@ public class PanelPedido extends JPanel {
 
 		// --- Acciones del ciclo de vida ---
 		JPanel acciones = new JPanel(new GridLayout(3, 1, 4, 4));
+
 		JButton btnCobrar = new JButton("Cobrar y cerrar cuenta");
+		btnCobrar.setBackground(new Color(0, 153, 76));
+		btnCobrar.setForeground(Color.WHITE);
+		btnCobrar.setOpaque(true);
+		btnCobrar.setBorderPainted(false);
+		btnCobrar.setFont(btnCobrar.getFont().deriveFont(Font.BOLD));
+
 		JButton btnAnular = new JButton("Anular cuenta");
+		btnAnular.setBackground(new Color(200, 30, 30));
+		btnAnular.setForeground(Color.WHITE);
+		btnAnular.setOpaque(true);
+		btnAnular.setBorderPainted(false);
+
 		JButton btnVolver = new JButton("Volver al salon");
 
 		acciones.add(btnCobrar);
@@ -280,8 +294,12 @@ public class PanelPedido extends JPanel {
 	}
 
 	private void quitarConsumo() {
+		int fila = tabla.getSelectedRow();
+		if (fila < 0) {
+			ventana.mostrarError("Seleccione una linea de la comanda para quitarla.");
+			return;
+		}
 		try {
-			int fila = tabla.getSelectedRow();
 			Caja.getInstancia().quitarItem(pedidoActual, fila);
 			refrescarTabla();
 

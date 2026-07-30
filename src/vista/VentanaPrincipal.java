@@ -148,6 +148,11 @@ public class VentanaPrincipal extends JFrame {
 
 	public void setEmpleadoActual(Empleado empleadoActual) {
 		this.empleadoActual = empleadoActual;
+		if (empleadoActual != null) {
+			setTitle("Restaurante La Esquina  |  " + empleadoActual.getNombre());
+		} else {
+			setTitle("Restaurante La Esquina - Sistema de Gestion");
+		}
 	}
 
 	/** Cierra la conexion antes de terminar la aplicacion. */

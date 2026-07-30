@@ -29,6 +29,8 @@ public class PanelLogin extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
+	private static final Color COLOR_HEADER = new Color(30, 70, 130);
+
 	private VentanaPrincipal ventana;
 
 	private JTextField txtUsuario;
@@ -38,28 +40,54 @@ public class PanelLogin extends JPanel {
 		this.ventana = ventana;
 		setLayout(new BorderLayout());
 
-		JLabel titulo = new JLabel("RESTAURANTE LA ESQUINA", SwingConstants.CENTER);
-		titulo.setFont(new Font("SansSerif", Font.BOLD, 26));
-		titulo.setBorder(BorderFactory.createEmptyBorder(50, 20, 10, 20));
-		add(titulo, BorderLayout.NORTH);
+		// --- Cabecera con color institucional ---
+		JPanel header = new JPanel(new BorderLayout());
+		header.setBackground(COLOR_HEADER);
+		header.setBorder(BorderFactory.createEmptyBorder(30, 20, 30, 20));
 
-		JPanel formulario = new JPanel(new GridLayout(3, 2, 10, 12));
+		JLabel titulo = new JLabel("RESTAURANTE LA ESQUINA", SwingConstants.CENTER);
+		titulo.setFont(new Font("SansSerif", Font.BOLD, 28));
+		titulo.setForeground(Color.WHITE);
+
+		JLabel subtitulo = new JLabel("Sistema de Gestion", SwingConstants.CENTER);
+		subtitulo.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		subtitulo.setForeground(new Color(180, 210, 255));
+		subtitulo.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
+
+		JPanel textos = new JPanel(new GridLayout(2, 1));
+		textos.setOpaque(false);
+		textos.add(titulo);
+		textos.add(subtitulo);
+		header.add(textos, BorderLayout.CENTER);
+		add(header, BorderLayout.NORTH);
+
+		// --- Formulario ---
+		JPanel formulario = new JPanel(new GridLayout(3, 2, 10, 14));
 		formulario.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
 		txtUsuario = new JTextField(14);
 		txtClave = new JPasswordField(14);
 
-		formulario.add(new JLabel("Usuario:", SwingConstants.RIGHT));
+		JLabel lblUsuario = new JLabel("Usuario:", SwingConstants.RIGHT);
+		lblUsuario.setFont(lblUsuario.getFont().deriveFont(Font.BOLD));
+		JLabel lblClave = new JLabel("Clave:", SwingConstants.RIGHT);
+		lblClave.setFont(lblClave.getFont().deriveFont(Font.BOLD));
+
+		formulario.add(lblUsuario);
 		formulario.add(txtUsuario);
-		formulario.add(new JLabel("Clave:", SwingConstants.RIGHT));
+		formulario.add(lblClave);
 		formulario.add(txtClave);
 
-		JButton btnIngresar = new JButton("Ingresar");
+		JButton btnIngresar = new JButton("  Ingresar  ");
+		btnIngresar.setBackground(COLOR_HEADER);
+		btnIngresar.setForeground(Color.WHITE);
+		btnIngresar.setOpaque(true);
+		btnIngresar.setFont(btnIngresar.getFont().deriveFont(Font.BOLD, 13f));
 		formulario.add(new JLabel(""));
 		formulario.add(btnIngresar);
 
 		JPanel centro = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		formulario.setPreferredSize(new Dimension(420, 140));
+		formulario.setPreferredSize(new Dimension(420, 150));
 		centro.add(formulario);
 		add(centro, BorderLayout.CENTER);
 

@@ -27,7 +27,7 @@ public class ConexionBD {
 	// AJUSTAR ESTOS TRES VALORES SI TU MySQL TIENE OTRO USUARIO O CLAVE
 	// ------------------------------------------------------------------
 	private static final String URL =
-			"jdbc:mysql://localhost:3306/restaurante_final?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires";
+			"jdbc:mysql://localhost:3306/restaurante_final?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
 	private static final String USUARIO = "root";
 	private static final String CLAVE = "";
 
