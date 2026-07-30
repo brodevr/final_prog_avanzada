@@ -1,22 +1,11 @@
 package vista;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 
 import controlador.Restaurante;
@@ -24,10 +13,6 @@ import excepciones.AccesoDatosException;
 import excepciones.MontoInvalidoException;
 import modelo.Empleado;
 
-/**
- * ABM completo de empleados: es la segunda entidad con alta, modificacion, baja
- * y busqueda, que es lo que exige el requisito 2 de la consigna.
- */
 public class PanelEmpleadosABM extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -36,7 +21,7 @@ public class PanelEmpleadosABM extends JPanel {
 
 	private JTable tabla;
 	private DefaultTableModel modeloTabla;
-	private List<Empleado> empleadosEnTabla = new ArrayList<Empleado>();
+	private List<Empleado> empleadosEnTabla = new ArrayList<>();
 
 	private JTextField txtNombre;
 	private JTextField txtUsuario;
@@ -46,298 +31,219 @@ public class PanelEmpleadosABM extends JPanel {
 
 	public PanelEmpleadosABM(VentanaPrincipal ventana) {
 		this.ventana = ventana;
-		setLayout(new BorderLayout(10, 10));
-		setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+		setLayout(new BorderLayout(0, 0));
+		setBackground(EstiloUI.C_CREMA);
 
-		add(construirCabecera(), BorderLayout.NORTH);
-		add(construirTabla(), BorderLayout.CENTER);
+		add(construirCabecera(),   BorderLayout.NORTH);
+		add(construirTabla(),      BorderLayout.CENTER);
 		add(construirFormulario(), BorderLayout.SOUTH);
 	}
 
 	private JPanel construirCabecera() {
-		JPanel cabecera = new JPanel(new BorderLayout());
+		JPanel cab = new JPanel(new BorderLayout());
+		cab.setBackground(EstiloUI.C_NAVBAR);
+		cab.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
 
-		JLabel titulo = new JLabel("Personal del restaurante");
-		titulo.setFont(titulo.getFont().deriveFont(16f));
-		cabecera.add(titulo, BorderLayout.WEST);
+		JLabel titulo = new JLabel("Personal de la cafetería");
+		titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+		titulo.setForeground(Color.WHITE);
+		cab.add(titulo, BorderLayout.WEST);
 
-		JPanel derecha = new JPanel();
-		txtBuscar = new JTextField(14);
-		JButton btnBuscar = new JButton("Buscar");
-		JButton btnVerTodos = new JButton("Ver todos");
-		JButton btnVolver = new JButton("Volver al salon");
+		JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+		der.setOpaque(false);
+		txtBuscar = EstiloUI.campo(14);
+		JButton btnBuscar  = EstiloUI.btnNavbar("Buscar");
+		JButton btnVerTodos= EstiloUI.btnNavbar("Ver todos");
+		JButton btnVolver  = EstiloUI.btnNavbar("← Salon");
 
-		derecha.add(new JLabel("Nombre contiene:"));
-		derecha.add(txtBuscar);
-		derecha.add(btnBuscar);
-		derecha.add(btnVerTodos);
-		derecha.add(btnVolver);
-		cabecera.add(derecha, BorderLayout.EAST);
+		der.add(new JLabel("Nombre:") {{ setFont(EstiloUI.F_SMALL); setForeground(new Color(180,150,110)); }});
+		der.add(txtBuscar);
+		der.add(btnBuscar);
+		der.add(btnVerTodos);
+		der.add(btnVolver);
+		cab.add(der, BorderLayout.EAST);
 
 		btnBuscar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buscar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { buscar(); }
 		});
 		btnVerTodos.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				txtBuscar.setText("");
-				refrescar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { txtBuscar.setText(""); refrescar(); }
 		});
 		btnVolver.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.irAMesas();
-			}
+			@Override public void actionPerformed(ActionEvent e) { ventana.irAMesas(); }
 		});
 
-		return cabecera;
+		return cab;
 	}
 
 	private JScrollPane construirTabla() {
-		String[] columnas = { "ID", "Nombre", "Usuario", "Activo" };
-
-		modeloTabla = new DefaultTableModel(columnas, 0) {
+		String[] cols = { "ID", "Nombre", "Usuario", "Activo" };
+		modeloTabla = new DefaultTableModel(cols, 0) {
 			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean isCellEditable(int fila, int columna) {
-				return false;
-			}
+			@Override public boolean isCellEditable(int r, int c) { return false; }
 		};
-
 		tabla = new JTable(modeloTabla);
-		tabla.setRowHeight(22);
+		EstiloUI.estilizarTabla(tabla);
 
 		tabla.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					cargarSeleccionEnFormulario();
-				}
+				if (!e.getValueIsAdjusting()) cargarSeleccionEnFormulario();
 			}
 		});
 
-		return new JScrollPane(tabla);
+		JScrollPane sp = EstiloUI.scroll(tabla);
+		sp.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, EstiloUI.C_BORDE));
+		return sp;
 	}
 
 	private JPanel construirFormulario() {
-		JPanel contenedor = new JPanel(new BorderLayout(8, 8));
-		contenedor.setBorder(BorderFactory.createTitledBorder("Datos del empleado"));
+		JPanel contenedor = new JPanel(new BorderLayout(0, 0));
+		contenedor.setBackground(Color.WHITE);
+		contenedor.add(EstiloUI.barraTitulo("Datos del empleado"), BorderLayout.NORTH);
 
-		JPanel campos = new JPanel(new GridLayout(2, 4, 8, 8));
+		JPanel campos = new JPanel(new GridLayout(2, 4, 10, 10));
+		campos.setBackground(Color.WHITE);
+		campos.setBorder(BorderFactory.createEmptyBorder(14, 16, 10, 16));
 
-		txtNombre = new JTextField();
-		txtUsuario = new JTextField();
-		txtClave = new JTextField();
-		chkActivo = new JCheckBox("Activo", true);
+		txtNombre  = EstiloUI.campo(0);
+		txtUsuario = EstiloUI.campo(0);
+		txtClave   = EstiloUI.campo(0);
+		chkActivo  = new JCheckBox("Activo", true);
+		chkActivo.setFont(EstiloUI.F_NORMAL);
+		chkActivo.setBackground(Color.WHITE);
 
-		campos.add(new JLabel("Nombre completo:"));
-		campos.add(txtNombre);
-		campos.add(new JLabel("Usuario:"));
-		campos.add(txtUsuario);
-		campos.add(new JLabel("Clave:"));
-		campos.add(txtClave);
-		campos.add(chkActivo);
-		campos.add(new JLabel(""));
-
+		campos.add(lbl("Nombre completo:")); campos.add(txtNombre);
+		campos.add(lbl("Usuario:"));         campos.add(txtUsuario);
+		campos.add(lbl("Clave:"));           campos.add(txtClave);
+		campos.add(chkActivo);               campos.add(new JLabel(""));
 		contenedor.add(campos, BorderLayout.CENTER);
 
-		JPanel botones = new JPanel();
-		JButton btnNuevo = new JButton("Limpiar formulario");
-		JButton btnAlta = new JButton("Dar de alta");
-		JButton btnModificar = new JButton("Modificar seleccionado");
-		JButton btnBaja = new JButton("Dar de baja (logica)");
-		JButton btnEliminar = new JButton("Eliminar (fisico)");
+		JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+		botones.setBackground(new Color(248, 242, 234));
+		botones.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
+
+		JButton btnNuevo    = EstiloUI.btnBorde("Limpiar");
+		JButton btnAlta     = EstiloUI.btnVerde("Dar de alta");
+		JButton btnModif    = EstiloUI.btnPrimario("Modificar");
+		JButton btnBaja     = EstiloUI.btnBorde("Baja logica");
+		JButton btnEliminar = EstiloUI.btnRojo("Eliminar");
 
 		botones.add(btnNuevo);
 		botones.add(btnAlta);
-		botones.add(btnModificar);
+		botones.add(btnModif);
 		botones.add(btnBaja);
 		botones.add(btnEliminar);
 		contenedor.add(botones, BorderLayout.SOUTH);
 
 		btnNuevo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				limpiarFormulario();
-			}
+			@Override public void actionPerformed(ActionEvent e) { limpiarFormulario(); }
 		});
 		btnAlta.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				darDeAlta();
-			}
+			@Override public void actionPerformed(ActionEvent e) { darDeAlta(); }
 		});
-		btnModificar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				modificar();
-			}
+		btnModif.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { modificar(); }
 		});
 		btnBaja.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				darDeBaja();
-			}
+			@Override public void actionPerformed(ActionEvent e) { darDeBaja(); }
 		});
 		btnEliminar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				eliminar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { eliminar(); }
 		});
 
 		return contenedor;
 	}
 
-	// ------------------------------------------------------------------
-	// Datos
-	// ------------------------------------------------------------------
+	private static JLabel lbl(String t) {
+		JLabel l = new JLabel(t);
+		l.setFont(EstiloUI.F_NEGRITA);
+		l.setForeground(EstiloUI.C_CAFE);
+		return l;
+	}
 
 	public void refrescar() {
-		try {
-			mostrar(Restaurante.getInstancia().listarEmpleados());
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		try { mostrar(Restaurante.getInstancia().listarEmpleados()); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void buscar() {
-		try {
-			mostrar(Restaurante.getInstancia().buscarEmpleados(txtBuscar.getText()));
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		try { mostrar(Restaurante.getInstancia().buscarEmpleados(txtBuscar.getText())); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
-	private void mostrar(List<Empleado> empleados) {
-		empleadosEnTabla = empleados;
+	private void mostrar(List<Empleado> lista) {
+		empleadosEnTabla = lista;
 		modeloTabla.setRowCount(0);
-
-		for (int i = 0; i < empleados.size(); i++) {
-			Empleado empleado = empleados.get(i);
+		for (Empleado emp : lista) {
 			modeloTabla.addRow(new Object[] {
-					Integer.valueOf(empleado.getId()),
-					empleado.getNombre(),
-					empleado.getUsuario(),
-					empleado.isActivo() ? "SI" : "NO" });
+					Integer.valueOf(emp.getId()),
+					emp.getNombre(),
+					emp.getUsuario(),
+					emp.isActivo() ? "SI" : "NO" });
 		}
 	}
 
 	private Empleado getSeleccionado() {
 		int fila = tabla.getSelectedRow();
-		if (fila < 0 || fila >= empleadosEnTabla.size()) {
-			return null;
-		}
+		if (fila < 0 || fila >= empleadosEnTabla.size()) return null;
 		return empleadosEnTabla.get(fila);
 	}
 
 	private void cargarSeleccionEnFormulario() {
-		Empleado empleado = getSeleccionado();
-		if (empleado == null) {
-			return;
-		}
-		txtNombre.setText(empleado.getNombre());
-		txtUsuario.setText(empleado.getUsuario());
-		txtClave.setText(empleado.getClave());
-		chkActivo.setSelected(empleado.isActivo());
+		Empleado emp = getSeleccionado();
+		if (emp == null) return;
+		txtNombre.setText(emp.getNombre());
+		txtUsuario.setText(emp.getUsuario());
+		txtClave.setText(emp.getClave());
+		chkActivo.setSelected(emp.isActivo());
 	}
 
 	private void limpiarFormulario() {
-		txtNombre.setText("");
-		txtUsuario.setText("");
-		txtClave.setText("");
-		chkActivo.setSelected(true);
-		tabla.clearSelection();
+		txtNombre.setText(""); txtUsuario.setText(""); txtClave.setText("");
+		chkActivo.setSelected(true); tabla.clearSelection();
 	}
-
-	// ------------------------------------------------------------------
-	// Operaciones
-	// ------------------------------------------------------------------
 
 	private void darDeAlta() {
 		try {
 			Restaurante.getInstancia().altaEmpleado(txtNombre.getText(),
 					txtUsuario.getText(), txtClave.getText());
 			ventana.mostrarInfo("Empleado dado de alta.");
-			limpiarFormulario();
-			refrescar();
-
-		} catch (MontoInvalidoException e) {
-			ventana.mostrarError(e.getMessage());
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+			limpiarFormulario(); refrescar();
+		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
+		} catch (AccesoDatosException e)    { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void modificar() {
-		Empleado seleccionado = getSeleccionado();
-		if (seleccionado == null) {
-			ventana.mostrarError("Seleccione un empleado de la tabla.");
-			return;
-		}
-
+		Empleado sel = getSeleccionado();
+		if (sel == null) { ventana.mostrarError("Seleccione un empleado de la tabla."); return; }
 		try {
-			Empleado modificado = new Empleado(seleccionado.getId(),
-					txtNombre.getText().trim(),
-					txtUsuario.getText().trim(),
-					txtClave.getText(),
-					chkActivo.isSelected());
-
-			Restaurante.getInstancia().modificarEmpleado(modificado);
+			Empleado mod = new Empleado(sel.getId(), txtNombre.getText().trim(),
+					txtUsuario.getText().trim(), txtClave.getText(), chkActivo.isSelected());
+			Restaurante.getInstancia().modificarEmpleado(mod);
 			ventana.mostrarInfo("Empleado modificado.");
 			refrescar();
-
-		} catch (MontoInvalidoException e) {
-			ventana.mostrarError(e.getMessage());
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
+		} catch (AccesoDatosException e)    { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void darDeBaja() {
-		Empleado seleccionado = getSeleccionado();
-		if (seleccionado == null) {
-			ventana.mostrarError("Seleccione un empleado de la tabla.");
-			return;
-		}
-		if (seleccionado.getId() == ventana.getEmpleadoActual().getId()) {
+		Empleado sel = getSeleccionado();
+		if (sel == null) { ventana.mostrarError("Seleccione un empleado de la tabla."); return; }
+		if (sel.getId() == ventana.getEmpleadoActual().getId()) {
 			ventana.mostrarError("No puede darse de baja a si mismo mientras usa el sistema.");
 			return;
 		}
-		if (!ventana.confirmar("Dar de baja a " + seleccionado.getNombre() + "?")) {
-			return;
-		}
-
-		try {
-			Restaurante.getInstancia().darDeBajaEmpleado(seleccionado.getId());
-			refrescar();
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		if (!ventana.confirmar("Dar de baja a " + sel.getNombre() + "?")) return;
+		try { Restaurante.getInstancia().darDeBajaEmpleado(sel.getId()); refrescar(); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void eliminar() {
-		Empleado seleccionado = getSeleccionado();
-		if (seleccionado == null) {
-			ventana.mostrarError("Seleccione un empleado de la tabla.");
-			return;
-		}
-		if (!ventana.confirmar("Eliminar definitivamente a " + seleccionado.getNombre()
-				+ "? Si tiene pedidos registrados, use la baja logica.")) {
-			return;
-		}
-
-		try {
-			Restaurante.getInstancia().eliminarEmpleado(seleccionado.getId());
-			limpiarFormulario();
-			refrescar();
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		Empleado sel = getSeleccionado();
+		if (sel == null) { ventana.mostrarError("Seleccione un empleado de la tabla."); return; }
+		if (!ventana.confirmar("Eliminar definitivamente a " + sel.getNombre() + "?")) return;
+		try { Restaurante.getInstancia().eliminarEmpleado(sel.getId()); limpiarFormulario(); refrescar(); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 }

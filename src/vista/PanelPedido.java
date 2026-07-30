@@ -1,21 +1,9 @@
 package vista;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import controlador.Caja;
@@ -32,14 +20,6 @@ import promociones.DescuentoMontoFijo;
 import promociones.DescuentoPorcentaje;
 import promociones.SinDescuento;
 
-/**
- * Comanda de una mesa: carga de consumos, descuentos y cierre de la cuenta.
- *
- * Es la pantalla donde se ve el polimorfismo funcionando: la columna
- * "Detalle" de la tabla se llena con getDescripcionDetallada(), y cada fila
- * muestra un texto distinto segun sea un plato o una bebida, sin que el panel
- * pregunte nunca de que tipo es cada item.
- */
 public class PanelPedido extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -60,158 +40,174 @@ public class PanelPedido extends JPanel {
 
 	public PanelPedido(VentanaPrincipal ventana) {
 		this.ventana = ventana;
-		setLayout(new BorderLayout(10, 10));
-		setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+		setLayout(new BorderLayout(0, 0));
+		setBackground(EstiloUI.C_CREMA);
 
-		lblCabecera = new JLabel("Comanda");
-		lblCabecera.setFont(new Font("SansSerif", Font.BOLD, 16));
-		add(lblCabecera, BorderLayout.NORTH);
-
-		add(construirZonaCentral(), BorderLayout.CENTER);
-		add(construirZonaInferior(), BorderLayout.SOUTH);
+		add(construirCabecera(), BorderLayout.NORTH);
+		add(construirCentro(), BorderLayout.CENTER);
+		add(construirPie(), BorderLayout.SOUTH);
 	}
 
-	private JPanel construirZonaCentral() {
-		JPanel centro = new JPanel(new BorderLayout(8, 8));
+	private JPanel construirCabecera() {
+		JPanel cab = new JPanel(new BorderLayout());
+		cab.setBackground(EstiloUI.C_CAFE);
+		cab.setBorder(BorderFactory.createEmptyBorder(12, 18, 12, 18));
 
-		// --- Alta de consumos ---
-		JPanel carga = new JPanel();
-		carga.setBorder(BorderFactory.createTitledBorder("Cargar consumo"));
+		lblCabecera = new JLabel("Comanda");
+		lblCabecera.setFont(new Font("Segoe UI", Font.BOLD, 15));
+		lblCabecera.setForeground(Color.WHITE);
+		cab.add(lblCabecera, BorderLayout.CENTER);
+		return cab;
+	}
 
-		comboProductos = new JComboBox<ItemMenu>();
-		txtCantidad = new JTextField("1", 4);
-		JButton btnAgregar = new JButton("Agregar");
-		JButton btnQuitar = new JButton("Quitar linea seleccionada");
+	private JPanel construirCentro() {
+		JPanel centro = new JPanel(new BorderLayout(0, 0));
+		centro.setBackground(EstiloUI.C_CREMA);
 
-		carga.add(new JLabel("Producto:"));
+		// --- Sección cargar consumo ---
+		JPanel cargaWrap = new JPanel(new BorderLayout(0, 0));
+		cargaWrap.setBackground(EstiloUI.C_CREMA);
+		cargaWrap.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, EstiloUI.C_BORDE));
+		cargaWrap.add(EstiloUI.barraTitulo("Agregar consumo"), BorderLayout.NORTH);
+
+		JPanel carga = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+		carga.setBackground(Color.WHITE);
+
+		comboProductos = new JComboBox<>();
+		comboProductos.setFont(EstiloUI.F_NORMAL);
+		comboProductos.setPreferredSize(new Dimension(240, 32));
+
+		txtCantidad = EstiloUI.campo(4);
+		txtCantidad.setText("1");
+
+		JButton btnAgregar = EstiloUI.btnAcento("+ Agregar");
+		JButton btnQuitar  = EstiloUI.btnBorde("Quitar linea");
+
+		carga.add(new JLabel("Producto:") {{ setFont(EstiloUI.F_NEGRITA); setForeground(EstiloUI.C_CAFE); }});
 		carga.add(comboProductos);
-		carga.add(new JLabel("Cantidad:"));
+		carga.add(new JLabel("Cant.:") {{ setFont(EstiloUI.F_NEGRITA); setForeground(EstiloUI.C_CAFE); }});
 		carga.add(txtCantidad);
 		carga.add(btnAgregar);
 		carga.add(btnQuitar);
-		centro.add(carga, BorderLayout.NORTH);
+		cargaWrap.add(carga, BorderLayout.CENTER);
+		centro.add(cargaWrap, BorderLayout.NORTH);
 
-		// --- Tabla de detalles ---
+		// --- Tabla ---
 		String[] columnas = { "Producto", "Detalle", "Cant.", "P. unitario", "Subtotal" };
 		modeloTabla = new DefaultTableModel(columnas, 0) {
 			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean isCellEditable(int fila, int columna) {
-				return false;
-			}
+			@Override public boolean isCellEditable(int r, int c) { return false; }
 		};
 		tabla = new JTable(modeloTabla);
-		tabla.setRowHeight(24);
-		centro.add(new JScrollPane(tabla), BorderLayout.CENTER);
+		EstiloUI.estilizarTabla(tabla);
+
+		JScrollPane scrollTabla = EstiloUI.scroll(tabla);
+		scrollTabla.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, EstiloUI.C_BORDE));
+		centro.add(scrollTabla, BorderLayout.CENTER);
 
 		btnAgregar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				agregarConsumo();
-			}
+			@Override public void actionPerformed(ActionEvent e) { agregarConsumo(); }
 		});
 		btnQuitar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				quitarConsumo();
-			}
+			@Override public void actionPerformed(ActionEvent e) { quitarConsumo(); }
 		});
 
 		return centro;
 	}
 
-	private JPanel construirZonaInferior() {
-		JPanel inferior = new JPanel(new BorderLayout(10, 10));
+	private JPanel construirPie() {
+		JPanel pie = new JPanel(new BorderLayout(0, 0));
+		pie.setBackground(Color.WHITE);
+		pie.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
 
-		// --- Totales ---
-		JPanel totales = new JPanel(new GridLayout(4, 1, 2, 2));
-		totales.setBorder(BorderFactory.createTitledBorder("Totales"));
+		// Totales
+		JPanel panelTotales = new JPanel(new GridLayout(4, 1, 0, 4));
+		panelTotales.setBackground(Color.WHITE);
+		panelTotales.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createMatteBorder(0, 0, 0, 1, EstiloUI.C_BORDE),
+				BorderFactory.createEmptyBorder(14, 20, 14, 20)));
 
-		lblSubtotal = new JLabel("Subtotal: $0.00");
+		lblSubtotal  = new JLabel("Subtotal: $0.00");
 		lblDescuento = new JLabel("Descuento: $0.00");
-		lblTotal = new JLabel("TOTAL: $0.00");
-		lblTotal.setFont(new Font("SansSerif", Font.BOLD, 20));
-		lblTotal.setForeground(new Color(0, 120, 0));
-		lblDemora = new JLabel("Demora estimada: 0 min");
+		lblTotal     = new JLabel("TOTAL: $0.00");
+		lblDemora    = new JLabel("Demora estimada: 0 min");
 
-		totales.add(lblSubtotal);
-		totales.add(lblDescuento);
-		totales.add(lblTotal);
-		totales.add(lblDemora);
-		inferior.add(totales, BorderLayout.WEST);
+		lblSubtotal.setFont(EstiloUI.F_NORMAL);
+		lblSubtotal.setForeground(EstiloUI.C_CAFE);
+		lblDescuento.setFont(EstiloUI.F_NORMAL);
+		lblDescuento.setForeground(new Color(150, 80, 30));
+		lblTotal.setFont(EstiloUI.F_TOTAL);
+		lblTotal.setForeground(EstiloUI.C_LIBRE);
+		lblDemora.setFont(EstiloUI.F_SMALL);
+		lblDemora.setForeground(new Color(130, 100, 70));
 
-		// --- Descuentos ---
-		JPanel promos = new JPanel();
-		promos.setBorder(BorderFactory.createTitledBorder("Promociones"));
+		panelTotales.add(lblSubtotal);
+		panelTotales.add(lblDescuento);
+		panelTotales.add(lblTotal);
+		panelTotales.add(lblDemora);
 
-		comboDescuentos = new JComboBox<Descuento>();
+		// Promociones
+		JPanel panelPromos = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 14));
+		panelPromos.setBackground(Color.WHITE);
+		panelPromos.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createMatteBorder(0, 0, 0, 1, EstiloUI.C_BORDE),
+				BorderFactory.createEmptyBorder(0, 16, 0, 0)));
+
+		JLabel lblPromo = new JLabel("Promo:");
+		lblPromo.setFont(EstiloUI.F_NEGRITA);
+		lblPromo.setForeground(EstiloUI.C_CAFE);
+
+		comboDescuentos = new JComboBox<>();
+		comboDescuentos.setFont(EstiloUI.F_NORMAL);
+		comboDescuentos.setPreferredSize(new Dimension(200, 32));
 		comboDescuentos.addItem(new SinDescuento());
 		comboDescuentos.addItem(new DescuentoPorcentaje(10));
 		comboDescuentos.addItem(new DescuentoPorcentaje(20));
 		comboDescuentos.addItem(new DescuentoMontoFijo(2000));
 
-		JButton btnAplicar = new JButton("Aplicar");
-		promos.add(comboDescuentos);
-		promos.add(btnAplicar);
-		inferior.add(promos, BorderLayout.CENTER);
+		JButton btnAplicar = EstiloUI.btnBorde("Aplicar");
 
-		// --- Acciones del ciclo de vida ---
-		JPanel acciones = new JPanel(new GridLayout(3, 1, 4, 4));
+		panelPromos.add(lblPromo);
+		panelPromos.add(comboDescuentos);
+		panelPromos.add(btnAplicar);
 
-		JButton btnCobrar = new JButton("Cobrar y cerrar cuenta");
-		btnCobrar.setBackground(new Color(0, 153, 76));
-		btnCobrar.setForeground(Color.WHITE);
-		btnCobrar.setOpaque(true);
-		btnCobrar.setBorderPainted(false);
-		btnCobrar.setFont(btnCobrar.getFont().deriveFont(Font.BOLD));
+		// Acciones
+		JPanel panelAcciones = new JPanel(new GridLayout(3, 1, 6, 6));
+		panelAcciones.setBackground(Color.WHITE);
+		panelAcciones.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
 
-		JButton btnAnular = new JButton("Anular cuenta");
-		btnAnular.setBackground(new Color(200, 30, 30));
-		btnAnular.setForeground(Color.WHITE);
-		btnAnular.setOpaque(true);
-		btnAnular.setBorderPainted(false);
+		JButton btnCobrar = EstiloUI.btnVerde("Cobrar y cerrar cuenta");
+		JButton btnAnular = EstiloUI.btnRojo("Anular cuenta");
+		JButton btnVolver = EstiloUI.btnBorde("← Volver al salon");
 
-		JButton btnVolver = new JButton("Volver al salon");
+		panelAcciones.add(btnCobrar);
+		panelAcciones.add(btnAnular);
+		panelAcciones.add(btnVolver);
 
-		acciones.add(btnCobrar);
-		acciones.add(btnAnular);
-		acciones.add(btnVolver);
-		inferior.add(acciones, BorderLayout.EAST);
+		pie.add(panelTotales,  BorderLayout.WEST);
+		pie.add(panelPromos,   BorderLayout.CENTER);
+		pie.add(panelAcciones, BorderLayout.EAST);
 
 		btnAplicar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				aplicarDescuento();
-			}
+			@Override public void actionPerformed(ActionEvent e) { aplicarDescuento(); }
 		});
 		btnCobrar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				cobrar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { cobrar(); }
 		});
 		btnAnular.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				anular();
-			}
+			@Override public void actionPerformed(ActionEvent e) { anular(); }
 		});
 		btnVolver.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.irAMesas();
-			}
+			@Override public void actionPerformed(ActionEvent e) { ventana.irAMesas(); }
 		});
 
-		return inferior;
+		return pie;
 	}
 
 	// ------------------------------------------------------------------
 	// Carga y refresco
 	// ------------------------------------------------------------------
 
-	/** Recibe el pedido con el que se va a trabajar y arma la pantalla. */
 	public void cargarPedido(Pedido pedido) {
 		this.pedidoActual = pedido;
 		cargarProductosDisponibles();
@@ -221,9 +217,8 @@ public class PanelPedido extends JPanel {
 	private void cargarProductosDisponibles() {
 		comboProductos.removeAllItems();
 		try {
-			List<ItemMenu> disponibles = Restaurante.getInstancia().listarMenuDisponible();
-			for (int i = 0; i < disponibles.size(); i++) {
-				comboProductos.addItem(disponibles.get(i));
+			for (ItemMenu item : Restaurante.getInstancia().listarMenuDisponible()) {
+				comboProductos.addItem(item);
 			}
 		} catch (AccesoDatosException e) {
 			ventana.mostrarError(e.getMessage());
@@ -232,33 +227,28 @@ public class PanelPedido extends JPanel {
 
 	private void refrescarTabla() {
 		modeloTabla.setRowCount(0);
-
-		if (pedidoActual == null) {
-			return;
-		}
+		if (pedidoActual == null) return;
 
 		lblCabecera.setText("Cuenta #" + pedidoActual.getId()
-				+ "   |   Mesa " + pedidoActual.getMesa().getNumero()
-				+ " (" + pedidoActual.getMesa().getSector() + ")"
-				+ "   |   Atiende: " + pedidoActual.getEmpleado().getNombre()
-				+ "   |   Estado: " + pedidoActual.getEstado());
+				+ "   ·   Mesa " + pedidoActual.getMesa().getNumero()
+				+ " — " + pedidoActual.getMesa().getSector()
+				+ "   ·   Atiende: " + pedidoActual.getEmpleado().getNombre()
+				+ "   ·   " + pedidoActual.getEstado());
 
-		List<DetallePedido> detalles = pedidoActual.getDetalles();
-		for (int i = 0; i < detalles.size(); i++) {
-			DetallePedido detalle = detalles.get(i);
+		for (DetallePedido d : pedidoActual.getDetalles()) {
 			modeloTabla.addRow(new Object[] {
-					detalle.getItem().getNombre(),
-					detalle.getItem().getDescripcionDetallada(),
-					Integer.valueOf(detalle.getCantidad()),
-					String.format("%.2f", detalle.getPrecioUnitario()),
-					String.format("%.2f", detalle.calcularSubtotal()) });
+					d.getItem().getNombre(),
+					d.getItem().getDescripcionDetallada(),
+					Integer.valueOf(d.getCantidad()),
+					String.format("$%.2f", d.getPrecioUnitario()),
+					String.format("$%.2f", d.calcularSubtotal()) });
 		}
 
-		lblSubtotal.setText(String.format("Subtotal: $%.2f", pedidoActual.calcularSubtotal()));
-		lblDescuento.setText(String.format("Descuento (%s): $%.2f",
+		lblSubtotal.setText(String.format("Subtotal:   $%.2f", pedidoActual.calcularSubtotal()));
+		lblDescuento.setText(String.format("Descuento (%s):   -$%.2f",
 				pedidoActual.getDescuento().getDescripcion(), pedidoActual.calcularDescuento()));
-		lblTotal.setText(String.format("TOTAL: $%.2f", pedidoActual.calcularTotal()));
-		lblDemora.setText("Demora estimada: " + pedidoActual.calcularDemoraEstimada() + " min");
+		lblTotal.setText(String.format("TOTAL   $%.2f", pedidoActual.calcularTotal()));
+		lblDemora.setText("⏱  Demora estimada: " + pedidoActual.calcularDemoraEstimada() + " min");
 	}
 
 	// ------------------------------------------------------------------
@@ -269,11 +259,9 @@ public class PanelPedido extends JPanel {
 		try {
 			ItemMenu seleccionado = (ItemMenu) comboProductos.getSelectedItem();
 			int cantidad = leerCantidad();
-
 			Caja.getInstancia().agregarItem(pedidoActual, seleccionado, cantidad);
 			txtCantidad.setText("1");
 			refrescarTabla();
-
 		} catch (MontoInvalidoException e) {
 			ventana.mostrarError(e.getMessage());
 		} catch (ItemNoDisponibleException e) {
@@ -302,7 +290,6 @@ public class PanelPedido extends JPanel {
 		try {
 			Caja.getInstancia().quitarItem(pedidoActual, fila);
 			refrescarTabla();
-
 		} catch (MontoInvalidoException e) {
 			ventana.mostrarError(e.getMessage());
 		} catch (PedidoCerradoException e) {
@@ -317,7 +304,6 @@ public class PanelPedido extends JPanel {
 			Descuento elegido = (Descuento) comboDescuentos.getSelectedItem();
 			Caja.getInstancia().aplicarDescuento(pedidoActual, elegido);
 			refrescarTabla();
-
 		} catch (MontoInvalidoException e) {
 			ventana.mostrarError(e.getMessage());
 		} catch (PedidoCerradoException e) {
@@ -328,19 +314,12 @@ public class PanelPedido extends JPanel {
 	}
 
 	private void cobrar() {
-		if (pedidoActual == null) {
-			ventana.mostrarError("No hay ninguna cuenta cargada.");
-			return;
-		}
-		if (!ventana.confirmar(String.format("Cobrar la mesa %d por $%.2f?",
-				pedidoActual.getMesa().getNumero(), pedidoActual.calcularTotal()))) {
-			return;
-		}
-
+		if (pedidoActual == null) { ventana.mostrarError("No hay cuenta cargada."); return; }
+		if (!ventana.confirmar(String.format("Cobrar mesa %d por $%.2f?",
+				pedidoActual.getMesa().getNumero(), pedidoActual.calcularTotal()))) return;
 		try {
 			Caja.getInstancia().cerrarCuenta(pedidoActual);
 			ventana.irATicket(pedidoActual.generarTexto());
-
 		} catch (MontoInvalidoException e) {
 			ventana.mostrarError(e.getMessage());
 		} catch (PedidoCerradoException e) {
@@ -351,20 +330,13 @@ public class PanelPedido extends JPanel {
 	}
 
 	private void anular() {
-		if (pedidoActual == null) {
-			ventana.mostrarError("No hay ninguna cuenta cargada.");
-			return;
-		}
+		if (pedidoActual == null) { ventana.mostrarError("No hay cuenta cargada."); return; }
 		if (!ventana.confirmar("Anular la cuenta de la mesa "
-				+ pedidoActual.getMesa().getNumero() + "? No se registrara facturacion.")) {
-			return;
-		}
-
+				+ pedidoActual.getMesa().getNumero() + "?\nNo se registrara facturacion.")) return;
 		try {
 			Caja.getInstancia().anularCuenta(pedidoActual);
 			ventana.mostrarInfo("Cuenta anulada. La mesa quedo libre.");
 			ventana.irAMesas();
-
 		} catch (MontoInvalidoException e) {
 			ventana.mostrarError(e.getMessage());
 		} catch (PedidoCerradoException e) {

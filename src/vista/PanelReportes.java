@@ -1,20 +1,10 @@
 package vista;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import controlador.Caja;
 import excepciones.AccesoDatosException;
@@ -22,25 +12,16 @@ import excepciones.MontoInvalidoException;
 import modelo.Imprimible;
 import modelo.ReporteVentas;
 
-/**
- * Reportes y estadisticas del negocio.
- *
- * Fijarse en el metodo mostrar(Imprimible): recibe la INTERFAZ, no la clase
- * concreta. Al panel le da lo mismo si le pasan un ReporteVentas o un Pedido:
- * mientras sepa generar su texto, lo puede mostrar. Eso es programar contra
- * abstracciones y no contra implementaciones.
- */
 public class PanelReportes extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
 	private static final String FACTURACION = "Facturacion por periodo";
-	private static final String PRODUCTOS = "Productos mas vendidos";
-	private static final String MOZOS = "Ventas por mozo";
-	private static final String TICKET = "Ticket promedio";
+	private static final String PRODUCTOS   = "Productos mas vendidos";
+	private static final String MOZOS       = "Ventas por empleado";
+	private static final String TICKET      = "Ticket promedio";
 
 	private VentanaPrincipal ventana;
-
 	private JComboBox<String> comboReporte;
 	private JTextField txtDesde;
 	private JTextField txtHasta;
@@ -48,58 +29,72 @@ public class PanelReportes extends JPanel {
 
 	public PanelReportes(VentanaPrincipal ventana) {
 		this.ventana = ventana;
-		setLayout(new BorderLayout(10, 10));
-		setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+		setLayout(new BorderLayout(0, 0));
+		setBackground(EstiloUI.C_CREMA);
 
-		add(construirFiltros(), BorderLayout.NORTH);
+		add(construirCabecera(), BorderLayout.NORTH);
 
 		areaResultado = new JTextArea();
 		areaResultado.setEditable(false);
-		areaResultado.setFont(new Font("Monospaced", Font.PLAIN, 13));
-		add(new JScrollPane(areaResultado), BorderLayout.CENTER);
+		areaResultado.setFont(EstiloUI.F_MONO);
+		areaResultado.setBackground(Color.WHITE);
+		areaResultado.setForeground(EstiloUI.C_CAFE);
+		areaResultado.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
 
-		JPanel pie = new JPanel();
-		JButton btnVolver = new JButton("Volver al salon");
+		JScrollPane sp = EstiloUI.scroll(areaResultado);
+		sp.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, EstiloUI.C_BORDE));
+		add(sp, BorderLayout.CENTER);
+
+		JPanel pie = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 10));
+		pie.setBackground(new Color(248, 242, 234));
+		pie.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
+		JButton btnVolver = EstiloUI.btnBorde("← Volver al salon");
 		pie.add(btnVolver);
 		add(pie, BorderLayout.SOUTH);
 
 		btnVolver.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				PanelReportes.this.ventana.irAMesas();
-			}
+			@Override public void actionPerformed(ActionEvent e) { ventana.irAMesas(); }
 		});
 	}
 
-	private JPanel construirFiltros() {
-		JPanel filtros = new JPanel();
-		filtros.setBorder(BorderFactory.createTitledBorder("Filtros"));
+	private JPanel construirCabecera() {
+		JPanel cab = new JPanel(new BorderLayout());
+		cab.setBackground(EstiloUI.C_NAVBAR);
+		cab.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
 
-		comboReporte = new JComboBox<String>(new String[] {
-				FACTURACION, PRODUCTOS, MOZOS, TICKET });
+		JLabel titulo = new JLabel("Reportes y estadísticas");
+		titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+		titulo.setForeground(Color.WHITE);
+		cab.add(titulo, BorderLayout.WEST);
+
+		JPanel filtros = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+		filtros.setOpaque(false);
 
 		LocalDate hoy = LocalDate.now();
-		txtDesde = new JTextField(hoy.withDayOfMonth(1).toString(), 10);
-		txtHasta = new JTextField(hoy.toString(), 10);
+		comboReporte = new JComboBox<>(new String[]{ FACTURACION, PRODUCTOS, MOZOS, TICKET });
+		comboReporte.setFont(EstiloUI.F_NORMAL);
+		comboReporte.setPreferredSize(new Dimension(220, 30));
 
-		JButton btnGenerar = new JButton("Generar");
+		txtDesde = EstiloUI.campo(10);
+		txtDesde.setText(hoy.withDayOfMonth(1).toString());
+		txtHasta = EstiloUI.campo(10);
+		txtHasta.setText(hoy.toString());
 
-		filtros.add(new JLabel("Reporte:"));
+		JButton btnGenerar = EstiloUI.btnAcento("Generar");
+
 		filtros.add(comboReporte);
-		filtros.add(new JLabel("Desde (aaaa-mm-dd):"));
+		filtros.add(new JLabel("Desde:") {{ setFont(EstiloUI.F_SMALL); setForeground(new Color(180,150,110)); }});
 		filtros.add(txtDesde);
-		filtros.add(new JLabel("Hasta (aaaa-mm-dd):"));
+		filtros.add(new JLabel("Hasta:") {{ setFont(EstiloUI.F_SMALL); setForeground(new Color(180,150,110)); }});
 		filtros.add(txtHasta);
 		filtros.add(btnGenerar);
+		cab.add(filtros, BorderLayout.EAST);
 
 		btnGenerar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				generar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { generar(); }
 		});
 
-		return filtros;
+		return cab;
 	}
 
 	private void generar() {
@@ -118,32 +113,21 @@ public class PanelReportes extends JPanel {
 			} else {
 				reporte = Caja.getInstancia().reporteTicketPromedio(desde, hasta);
 			}
-
 			mostrar(reporte);
-
-		} catch (MontoInvalidoException e) {
-			ventana.mostrarError(e.getMessage());
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
+		} catch (AccesoDatosException e)    { ventana.mostrarError(e.getMessage()); }
 	}
 
-	/**
-	 * Recibe cualquier Imprimible. Es el metodo que demuestra para que sirve la
-	 * interfaz: un mismo panel muestra reportes y tickets sin saber la clase
-	 * concreta que tiene entre manos.
-	 */
-	private void mostrar(Imprimible imprimible) {
-		areaResultado.setText(imprimible.generarTexto());
+	private void mostrar(Imprimible imp) {
+		areaResultado.setText(imp.generarTexto());
 		areaResultado.setCaretPosition(0);
 	}
 
-	private LocalDate leerFecha(String texto, String nombreCampo) throws MontoInvalidoException {
-		try {
-			return LocalDate.parse(texto.trim());
-		} catch (DateTimeParseException e) {
-			throw new MontoInvalidoException("La fecha '" + nombreCampo
-					+ "' debe tener el formato aaaa-mm-dd. Por ejemplo: 2026-07-29.");
+	private LocalDate leerFecha(String texto, String campo) throws MontoInvalidoException {
+		try { return LocalDate.parse(texto.trim()); }
+		catch (DateTimeParseException e) {
+			throw new MontoInvalidoException(
+					"La fecha '" + campo + "' debe tener el formato aaaa-mm-dd.");
 		}
 	}
 }

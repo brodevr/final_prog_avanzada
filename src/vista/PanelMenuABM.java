@@ -1,23 +1,11 @@
 package vista;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 
 import controlador.Restaurante;
@@ -27,27 +15,18 @@ import modelo.Bebida;
 import modelo.ItemMenu;
 import modelo.Plato;
 
-/**
- * ABM completo de la carta: alta, modificacion, baja y busqueda de productos
- * (requisito 2: "ABM completo para al menos dos entidades").
- *
- * Hay dos formas de baja:
- *  - Eliminar: borrado fisico. Solo funciona si el producto nunca se vendio.
- *  - Dar de baja: baja logica. Sale de la carta pero sigue apareciendo en los
- *    tickets historicos. Es la que se usa normalmente.
- */
 public class PanelMenuABM extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final String TIPO_PLATO = "PLATO";
+	private static final String TIPO_PLATO  = "PLATO";
 	private static final String TIPO_BEBIDA = "BEBIDA";
 
 	private VentanaPrincipal ventana;
 
 	private JTable tabla;
 	private DefaultTableModel modeloTabla;
-	private List<ItemMenu> itemsEnTabla = new ArrayList<ItemMenu>();
+	private List<ItemMenu> itemsEnTabla = new ArrayList<>();
 
 	private JTextField txtNombre;
 	private JTextField txtPrecio;
@@ -60,173 +39,152 @@ public class PanelMenuABM extends JPanel {
 
 	public PanelMenuABM(VentanaPrincipal ventana) {
 		this.ventana = ventana;
-		setLayout(new BorderLayout(10, 10));
-		setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+		setLayout(new BorderLayout(0, 0));
+		setBackground(EstiloUI.C_CREMA);
 
 		add(construirCabecera(), BorderLayout.NORTH);
-		add(construirTabla(), BorderLayout.CENTER);
+		add(construirTabla(),    BorderLayout.CENTER);
 		add(construirFormulario(), BorderLayout.SOUTH);
 
-		actualizarEtiquetasSegunTipo();
+		actualizarEtiquetas();
 	}
 
 	private JPanel construirCabecera() {
-		JPanel cabecera = new JPanel(new BorderLayout());
+		JPanel cab = new JPanel(new BorderLayout());
+		cab.setBackground(EstiloUI.C_NAVBAR);
+		cab.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
 
-		JLabel titulo = new JLabel("Carta del restaurante");
-		titulo.setFont(titulo.getFont().deriveFont(16f));
-		cabecera.add(titulo, BorderLayout.WEST);
+		JLabel titulo = new JLabel("Carta de la cafetería");
+		titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+		titulo.setForeground(Color.WHITE);
+		cab.add(titulo, BorderLayout.WEST);
 
-		JPanel derecha = new JPanel();
-		txtBuscar = new JTextField(14);
-		JButton btnBuscar = new JButton("Buscar");
-		JButton btnVerTodos = new JButton("Ver todos");
-		JButton btnVolver = new JButton("Volver al salon");
+		JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+		der.setOpaque(false);
 
-		derecha.add(new JLabel("Nombre contiene:"));
-		derecha.add(txtBuscar);
-		derecha.add(btnBuscar);
-		derecha.add(btnVerTodos);
-		derecha.add(btnVolver);
-		cabecera.add(derecha, BorderLayout.EAST);
+		txtBuscar = EstiloUI.campo(14);
+		JButton btnBuscar  = EstiloUI.btnNavbar("Buscar");
+		JButton btnVerTodos= EstiloUI.btnNavbar("Ver todos");
+		JButton btnVolver  = EstiloUI.btnNavbar("← Salon");
+
+		der.add(new JLabel("Nombre:") {{ setFont(EstiloUI.F_SMALL); setForeground(new Color(180,150,110)); }});
+		der.add(txtBuscar);
+		der.add(btnBuscar);
+		der.add(btnVerTodos);
+		der.add(btnVolver);
+		cab.add(der, BorderLayout.EAST);
 
 		btnBuscar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buscar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { buscar(); }
 		});
 		btnVerTodos.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				txtBuscar.setText("");
-				refrescar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { txtBuscar.setText(""); refrescar(); }
 		});
 		btnVolver.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.irAMesas();
-			}
+			@Override public void actionPerformed(ActionEvent e) { ventana.irAMesas(); }
 		});
 
-		return cabecera;
+		return cab;
 	}
 
 	private JScrollPane construirTabla() {
-		String[] columnas = { "ID", "Tipo", "Nombre", "Precio base", "Precio final",
-				"Disponible", "Detalle" };
-
-		modeloTabla = new DefaultTableModel(columnas, 0) {
+		String[] cols = { "ID", "Tipo", "Nombre", "Precio base", "Precio final", "Disponible", "Detalle" };
+		modeloTabla = new DefaultTableModel(cols, 0) {
 			private static final long serialVersionUID = 1L;
-
-			@Override
-			public boolean isCellEditable(int fila, int columna) {
-				return false;
-			}
+			@Override public boolean isCellEditable(int r, int c) { return false; }
 		};
-
 		tabla = new JTable(modeloTabla);
-		tabla.setRowHeight(22);
+		EstiloUI.estilizarTabla(tabla);
 
 		tabla.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					cargarSeleccionEnFormulario();
-				}
+				if (!e.getValueIsAdjusting()) cargarSeleccionEnFormulario();
 			}
 		});
 
-		return new JScrollPane(tabla);
+		JScrollPane sp = EstiloUI.scroll(tabla);
+		sp.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, EstiloUI.C_BORDE));
+		return sp;
 	}
 
 	private JPanel construirFormulario() {
-		JPanel contenedor = new JPanel(new BorderLayout(8, 8));
-		contenedor.setBorder(BorderFactory.createTitledBorder("Datos del producto"));
+		JPanel contenedor = new JPanel(new BorderLayout(0, 0));
+		contenedor.setBackground(Color.WHITE);
+		contenedor.add(EstiloUI.barraTitulo("Datos del producto"), BorderLayout.NORTH);
 
-		JPanel campos = new JPanel(new GridLayout(2, 6, 8, 8));
+		JPanel campos = new JPanel(new GridLayout(2, 6, 10, 10));
+		campos.setBackground(Color.WHITE);
+		campos.setBorder(BorderFactory.createEmptyBorder(14, 16, 10, 16));
 
-		txtNombre = new JTextField();
-		txtPrecio = new JTextField();
-		comboTipo = new JComboBox<String>(new String[] { TIPO_PLATO, TIPO_BEBIDA });
-		lblNumerico = new JLabel("Minutos:");
-		txtNumerico = new JTextField();
-		chkOpcion = new JCheckBox("Es entrada");
+		txtNombre   = EstiloUI.campo(0);
+		txtPrecio   = EstiloUI.campo(0);
+		txtNumerico = EstiloUI.campo(0);
+		comboTipo   = new JComboBox<>(new String[]{ TIPO_PLATO, TIPO_BEBIDA });
+		comboTipo.setFont(EstiloUI.F_NORMAL);
+		chkOpcion    = new JCheckBox("Es entrada");
+		chkOpcion.setFont(EstiloUI.F_NORMAL);
+		chkOpcion.setBackground(Color.WHITE);
 		chkDisponible = new JCheckBox("Disponible", true);
+		chkDisponible.setFont(EstiloUI.F_NORMAL);
+		chkDisponible.setBackground(Color.WHITE);
 
-		campos.add(new JLabel("Nombre:"));
-		campos.add(txtNombre);
-		campos.add(new JLabel("Precio base:"));
-		campos.add(txtPrecio);
-		campos.add(new JLabel("Tipo:"));
-		campos.add(comboTipo);
-
-		campos.add(lblNumerico);
-		campos.add(txtNumerico);
-		campos.add(chkOpcion);
-		campos.add(chkDisponible);
-		campos.add(new JLabel(""));
-		campos.add(new JLabel(""));
-
+		campos.add(lbl("Nombre:"));       campos.add(txtNombre);
+		campos.add(lbl("Precio base:"));  campos.add(txtPrecio);
+		campos.add(lbl("Tipo:"));         campos.add(comboTipo);
+		lblNumerico = lbl("Minutos prep.:");
+		campos.add(lblNumerico);          campos.add(txtNumerico);
+		campos.add(chkOpcion);            campos.add(chkDisponible);
+		campos.add(new JLabel(""));       campos.add(new JLabel(""));
 		contenedor.add(campos, BorderLayout.CENTER);
 
-		JPanel botones = new JPanel();
-		JButton btnNuevo = new JButton("Limpiar formulario");
-		JButton btnAlta = new JButton("Dar de alta");
-		JButton btnModificar = new JButton("Modificar seleccionado");
-		JButton btnBaja = new JButton("Dar de baja (logica)");
-		JButton btnEliminar = new JButton("Eliminar (fisico)");
+		JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+		botones.setBackground(new Color(248, 242, 234));
+		botones.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
+
+		JButton btnNuevo    = EstiloUI.btnBorde("Limpiar");
+		JButton btnAlta     = EstiloUI.btnVerde("Dar de alta");
+		JButton btnModif    = EstiloUI.btnPrimario("Modificar");
+		JButton btnBaja     = EstiloUI.btnBorde("Baja logica");
+		JButton btnEliminar = EstiloUI.btnRojo("Eliminar");
 
 		botones.add(btnNuevo);
 		botones.add(btnAlta);
-		botones.add(btnModificar);
+		botones.add(btnModif);
 		botones.add(btnBaja);
 		botones.add(btnEliminar);
 		contenedor.add(botones, BorderLayout.SOUTH);
 
 		comboTipo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				actualizarEtiquetasSegunTipo();
-			}
+			@Override public void actionPerformed(ActionEvent e) { actualizarEtiquetas(); }
 		});
 		btnNuevo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				limpiarFormulario();
-			}
+			@Override public void actionPerformed(ActionEvent e) { limpiarFormulario(); }
 		});
 		btnAlta.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				darDeAlta();
-			}
+			@Override public void actionPerformed(ActionEvent e) { darDeAlta(); }
 		});
-		btnModificar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				modificar();
-			}
+		btnModif.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { modificar(); }
 		});
 		btnBaja.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				darDeBaja();
-			}
+			@Override public void actionPerformed(ActionEvent e) { darDeBaja(); }
 		});
 		btnEliminar.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				eliminar();
-			}
+			@Override public void actionPerformed(ActionEvent e) { eliminar(); }
 		});
 
 		return contenedor;
 	}
 
-	/** Los campos especificos cambian de nombre segun el tipo elegido. */
-	private void actualizarEtiquetasSegunTipo() {
+	private static JLabel lbl(String texto) {
+		JLabel l = new JLabel(texto);
+		l.setFont(EstiloUI.F_NEGRITA);
+		l.setForeground(EstiloUI.C_CAFE);
+		return l;
+	}
+
+	private void actualizarEtiquetas() {
 		if (esPlatoSeleccionado()) {
 			lblNumerico.setText("Minutos prep.:");
 			chkOpcion.setText("Es entrada");
@@ -240,38 +198,26 @@ public class PanelMenuABM extends JPanel {
 		return TIPO_PLATO.equals(comboTipo.getSelectedItem());
 	}
 
-	// ------------------------------------------------------------------
-	// Datos
-	// ------------------------------------------------------------------
-
 	public void refrescar() {
-		try {
-			mostrar(Restaurante.getInstancia().listarMenuCompleto());
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		try { mostrar(Restaurante.getInstancia().listarMenuCompleto()); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void buscar() {
-		try {
-			mostrar(Restaurante.getInstancia().buscarProductos(txtBuscar.getText()));
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		try { mostrar(Restaurante.getInstancia().buscarProductos(txtBuscar.getText())); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void mostrar(List<ItemMenu> items) {
 		itemsEnTabla = items;
 		modeloTabla.setRowCount(0);
-
-		for (int i = 0; i < items.size(); i++) {
-			ItemMenu item = items.get(i);
+		for (ItemMenu item : items) {
 			modeloTabla.addRow(new Object[] {
 					Integer.valueOf(item.getId()),
 					item.getTipo(),
 					item.getNombre(),
-					String.format("%.2f", item.getPrecioBase()),
-					String.format("%.2f", item.calcularPrecioFinal()),
+					String.format("$%.2f", item.getPrecioBase()),
+					String.format("$%.2f", item.calcularPrecioFinal()),
 					item.isDisponible() ? "SI" : "NO",
 					item.getDescripcionDetallada() });
 		}
@@ -279,161 +225,100 @@ public class PanelMenuABM extends JPanel {
 
 	private ItemMenu getSeleccionado() {
 		int fila = tabla.getSelectedRow();
-		if (fila < 0 || fila >= itemsEnTabla.size()) {
-			return null;
-		}
+		if (fila < 0 || fila >= itemsEnTabla.size()) return null;
 		return itemsEnTabla.get(fila);
 	}
 
 	private void cargarSeleccionEnFormulario() {
 		ItemMenu item = getSeleccionado();
-		if (item == null) {
-			return;
-		}
-
+		if (item == null) return;
 		txtNombre.setText(item.getNombre());
 		txtPrecio.setText(String.valueOf(item.getPrecioBase()));
 		chkDisponible.setSelected(item.isDisponible());
 		comboTipo.setSelectedItem(item.getTipo());
-		actualizarEtiquetasSegunTipo();
-
+		actualizarEtiquetas();
 		if (item instanceof Plato) {
-			Plato plato = (Plato) item;
-			txtNumerico.setText(String.valueOf(plato.getMinutosPreparacion()));
-			chkOpcion.setSelected(plato.isEntrada());
+			Plato p = (Plato) item;
+			txtNumerico.setText(String.valueOf(p.getMinutosPreparacion()));
+			chkOpcion.setSelected(p.isEntrada());
 		} else {
-			Bebida bebida = (Bebida) item;
-			txtNumerico.setText(String.valueOf(bebida.getMililitros()));
-			chkOpcion.setSelected(bebida.isAlcoholica());
+			Bebida b = (Bebida) item;
+			txtNumerico.setText(String.valueOf(b.getMililitros()));
+			chkOpcion.setSelected(b.isAlcoholica());
 		}
 	}
 
 	private void limpiarFormulario() {
-		txtNombre.setText("");
-		txtPrecio.setText("");
-		txtNumerico.setText("");
-		chkOpcion.setSelected(false);
-		chkDisponible.setSelected(true);
+		txtNombre.setText(""); txtPrecio.setText(""); txtNumerico.setText("");
+		chkOpcion.setSelected(false); chkDisponible.setSelected(true);
 		tabla.clearSelection();
 	}
-
-	// ------------------------------------------------------------------
-	// Operaciones
-	// ------------------------------------------------------------------
 
 	private void darDeAlta() {
 		try {
 			double precio = leerDouble(txtPrecio.getText(), "el precio base");
-			int numerico = leerEntero(txtNumerico.getText(),
-					esPlatoSeleccionado() ? "los minutos de preparacion" : "los mililitros");
-
+			int num = leerEntero(txtNumerico.getText(),
+					esPlatoSeleccionado() ? "los minutos" : "los mililitros");
 			if (esPlatoSeleccionado()) {
-				Restaurante.getInstancia().altaPlato(txtNombre.getText(), precio,
-						numerico, chkOpcion.isSelected());
+				Restaurante.getInstancia().altaPlato(txtNombre.getText(), precio, num, chkOpcion.isSelected());
 			} else {
-				Restaurante.getInstancia().altaBebida(txtNombre.getText(), precio,
-						numerico, chkOpcion.isSelected());
+				Restaurante.getInstancia().altaBebida(txtNombre.getText(), precio, num, chkOpcion.isSelected());
 			}
-
 			ventana.mostrarInfo("Producto dado de alta.");
-			limpiarFormulario();
-			refrescar();
-
-		} catch (MontoInvalidoException e) {
-			ventana.mostrarError(e.getMessage());
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+			limpiarFormulario(); refrescar();
+		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
+		} catch (AccesoDatosException e)    { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void modificar() {
-		ItemMenu seleccionado = getSeleccionado();
-		if (seleccionado == null) {
-			ventana.mostrarError("Seleccione un producto de la tabla.");
-			return;
-		}
-
+		ItemMenu sel = getSeleccionado();
+		if (sel == null) { ventana.mostrarError("Seleccione un producto de la tabla."); return; }
 		try {
 			double precio = leerDouble(txtPrecio.getText(), "el precio base");
-			int numerico = leerEntero(txtNumerico.getText(),
-					esPlatoSeleccionado() ? "los minutos de preparacion" : "los mililitros");
-
+			int num = leerEntero(txtNumerico.getText(),
+					esPlatoSeleccionado() ? "los minutos" : "los mililitros");
 			ItemMenu modificado;
 			if (esPlatoSeleccionado()) {
-				modificado = new Plato(seleccionado.getId(), txtNombre.getText().trim(), precio,
-						chkDisponible.isSelected(), numerico, chkOpcion.isSelected());
+				modificado = new Plato(sel.getId(), txtNombre.getText().trim(), precio,
+						chkDisponible.isSelected(), num, chkOpcion.isSelected());
 			} else {
-				modificado = new Bebida(seleccionado.getId(), txtNombre.getText().trim(), precio,
-						chkDisponible.isSelected(), numerico, chkOpcion.isSelected());
+				modificado = new Bebida(sel.getId(), txtNombre.getText().trim(), precio,
+						chkDisponible.isSelected(), num, chkOpcion.isSelected());
 			}
-
 			Restaurante.getInstancia().modificarProducto(modificado);
 			ventana.mostrarInfo("Producto modificado.");
 			refrescar();
-
-		} catch (MontoInvalidoException e) {
-			ventana.mostrarError(e.getMessage());
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
+		} catch (AccesoDatosException e)    { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void darDeBaja() {
-		ItemMenu seleccionado = getSeleccionado();
-		if (seleccionado == null) {
-			ventana.mostrarError("Seleccione un producto de la tabla.");
-			return;
-		}
-		if (!ventana.confirmar("Sacar '" + seleccionado.getNombre() + "' de la carta?")) {
-			return;
-		}
-
-		try {
-			Restaurante.getInstancia().darDeBajaProducto(seleccionado.getId());
-			refrescar();
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
-		}
+		ItemMenu sel = getSeleccionado();
+		if (sel == null) { ventana.mostrarError("Seleccione un producto de la tabla."); return; }
+		if (!ventana.confirmar("Sacar '" + sel.getNombre() + "' de la carta?")) return;
+		try { Restaurante.getInstancia().darDeBajaProducto(sel.getId()); refrescar(); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void eliminar() {
-		ItemMenu seleccionado = getSeleccionado();
-		if (seleccionado == null) {
-			ventana.mostrarError("Seleccione un producto de la tabla.");
-			return;
-		}
-		if (!ventana.confirmar("Eliminar definitivamente '" + seleccionado.getNombre()
-				+ "'? Si ya se vendio, use la baja logica.")) {
-			return;
-		}
+		ItemMenu sel = getSeleccionado();
+		if (sel == null) { ventana.mostrarError("Seleccione un producto de la tabla."); return; }
+		if (!ventana.confirmar("Eliminar definitivamente '" + sel.getNombre() + "'?")) return;
+		try { Restaurante.getInstancia().eliminarProducto(sel.getId()); limpiarFormulario(); refrescar(); }
+		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
+	}
 
-		try {
-			Restaurante.getInstancia().eliminarProducto(seleccionado.getId());
-			limpiarFormulario();
-			refrescar();
-		} catch (AccesoDatosException e) {
-			ventana.mostrarError(e.getMessage());
+	private double leerDouble(String t, String campo) throws MontoInvalidoException {
+		try { return Double.parseDouble(t.trim().replace(",", ".")); }
+		catch (NumberFormatException e) {
+			throw new MontoInvalidoException("Revise " + campo + ": debe ser un numero.");
 		}
 	}
 
-	// ------------------------------------------------------------------
-	// Lectura de campos numericos
-	// ------------------------------------------------------------------
-
-	private double leerDouble(String texto, String nombreCampo) throws MontoInvalidoException {
-		try {
-			return Double.parseDouble(texto.trim().replace(",", "."));
-		} catch (NumberFormatException e) {
-			throw new MontoInvalidoException("Revise " + nombreCampo + ": debe ser un numero.");
-		}
-	}
-
-	private int leerEntero(String texto, String nombreCampo) throws MontoInvalidoException {
-		try {
-			return Integer.parseInt(texto.trim());
-		} catch (NumberFormatException e) {
-			throw new MontoInvalidoException("Revise " + nombreCampo
-					+ ": debe ser un numero entero.");
+	private int leerEntero(String t, String campo) throws MontoInvalidoException {
+		try { return Integer.parseInt(t.trim()); }
+		catch (NumberFormatException e) {
+			throw new MontoInvalidoException("Revise " + campo + ": debe ser un numero entero.");
 		}
 	}
 }

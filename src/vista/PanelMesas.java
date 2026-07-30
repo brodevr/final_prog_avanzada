@@ -1,20 +1,9 @@
 package vista;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 
 import controlador.Caja;
 import controlador.Restaurante;
@@ -24,20 +13,9 @@ import excepciones.MontoInvalidoException;
 import modelo.Mesa;
 import modelo.Pedido;
 
-/**
- * Plano del salon y menu principal del sistema (requisito 7: "menu principal
- * con opciones para acceder a todas las funcionalidades").
- *
- * Cada mesa es un boton. Verde = libre, rojo = ocupada. Un clic sobre una mesa
- * libre ABRE la cuenta; sobre una ocupada, la retoma. Ese clic es la puerta de
- * entrada al ciclo de apertura y cierre.
- */
 public class PanelMesas extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-
-	private static final Color VERDE_LIBRE  = new Color(0, 153, 76);
-	private static final Color ROJO_OCUPADA = new Color(200, 30, 30);
 
 	private VentanaPrincipal ventana;
 	private JPanel grillaMesas;
@@ -45,117 +23,123 @@ public class PanelMesas extends JPanel {
 
 	public PanelMesas(VentanaPrincipal ventana) {
 		this.ventana = ventana;
-		setLayout(new BorderLayout(10, 10));
-		setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+		setLayout(new BorderLayout());
+		setBackground(EstiloUI.C_CREMA);
 
-		add(construirBarraSuperior(), BorderLayout.NORTH);
+		add(construirNavbar(), BorderLayout.NORTH);
 
-		grillaMesas = new JPanel(new GridLayout(0, 5, 12, 12));
-		JScrollPane scroll = new JScrollPane(grillaMesas);
-		scroll.setBorder(BorderFactory.createTitledBorder("Salon"));
+		// Grilla de mesas sobre fondo crema
+		grillaMesas = new JPanel(new GridLayout(0, 4, 14, 14));
+		grillaMesas.setBackground(EstiloUI.C_CREMA);
+		grillaMesas.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+
+		JScrollPane scroll = EstiloUI.scroll(grillaMesas);
+		scroll.setBorder(null);
+		scroll.getViewport().setBackground(EstiloUI.C_CREMA);
 		add(scroll, BorderLayout.CENTER);
 
 		add(construirLeyenda(), BorderLayout.SOUTH);
 	}
 
-	private JPanel construirBarraSuperior() {
-		JPanel barra = new JPanel(new BorderLayout());
+	private JPanel construirNavbar() {
+		JPanel nav = new JPanel();
+		nav.setLayout(new BoxLayout(nav, BoxLayout.X_AXIS));
+		nav.setBackground(EstiloUI.C_NAVBAR);
+		nav.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
 
-		lblSesion = new JLabel("Sesion iniciada");
-		lblSesion.setFont(new Font("SansSerif", Font.BOLD, 14));
-		barra.add(lblSesion, BorderLayout.WEST);
+		JLabel logo = new JLabel("☕  Cafetería La Esquina");
+		logo.setFont(new Font("Segoe UI", Font.BOLD, 16));
+		logo.setForeground(Color.WHITE);
 
-		JPanel botones = new JPanel();
+		lblSesion = new JLabel("");
+		lblSesion.setFont(EstiloUI.F_SMALL);
+		lblSesion.setForeground(new Color(170, 140, 105));
 
-		JButton btnMenu = new JButton("Carta / Menu");
-		JButton btnEmpleados = new JButton("Empleados");
-		JButton btnReportes = new JButton("Reportes");
-		JButton btnCerrarSesion = new JButton("Cerrar sesion");
-		JButton btnSalir = new JButton("Salir");
+		JButton btnCarta = EstiloUI.btnNavbar("Carta");
+		JButton btnEmp   = EstiloUI.btnNavbar("Empleados");
+		JButton btnRep   = EstiloUI.btnNavbar("Reportes");
+		JButton btnCerrar= EstiloUI.btnNavbar("Cerrar sesion");
+		JButton btnSalir = EstiloUI.btnRojo("Salir");
+		btnSalir.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
 
-		botones.add(btnMenu);
-		botones.add(btnEmpleados);
-		botones.add(btnReportes);
-		botones.add(btnCerrarSesion);
-		botones.add(btnSalir);
-		barra.add(botones, BorderLayout.EAST);
+		nav.add(logo);
+		nav.add(Box.createHorizontalStrut(16));
+		nav.add(lblSesion);
+		nav.add(Box.createHorizontalGlue());
+		nav.add(btnCarta);
+		nav.add(Box.createHorizontalStrut(4));
+		nav.add(btnEmp);
+		nav.add(Box.createHorizontalStrut(4));
+		nav.add(btnRep);
+		nav.add(Box.createHorizontalStrut(16));
+		nav.add(btnCerrar);
+		nav.add(Box.createHorizontalStrut(8));
+		nav.add(btnSalir);
 
-		btnMenu.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.irAMenu();
-			}
+		btnCarta.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { ventana.irAMenu(); }
 		});
-		btnEmpleados.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.irAEmpleados();
-			}
+		btnEmp.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { ventana.irAEmpleados(); }
 		});
-		btnReportes.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.irAReportes();
-			}
+		btnRep.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { ventana.irAReportes(); }
 		});
-		btnCerrarSesion.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.cerrarSesion();
-			}
+		btnCerrar.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { ventana.cerrarSesion(); }
 		});
 		btnSalir.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ventana.salir();
-			}
+			@Override public void actionPerformed(ActionEvent e) { ventana.salir(); }
 		});
 
-		return barra;
+		return nav;
 	}
 
 	private JPanel construirLeyenda() {
-		JPanel leyenda = new JPanel();
+		JPanel leyenda = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 8));
+		leyenda.setBackground(new Color(240, 230, 215));
+		leyenda.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
 
-		JLabel libre = new JLabel("  LIBRE  ");
-		libre.setOpaque(true);
-		libre.setBackground(VERDE_LIBRE);
-		libre.setForeground(Color.WHITE);
+		JLabel lLibre = tag("  LIBRE  ", EstiloUI.C_LIBRE);
+		JLabel lOcupada = tag("  OCUPADA  ", EstiloUI.C_OCUPADA);
 
-		JLabel ocupada = new JLabel("  OCUPADA  ");
-		ocupada.setOpaque(true);
-		ocupada.setBackground(ROJO_OCUPADA);
-		ocupada.setForeground(Color.WHITE);
-
-		leyenda.add(new JLabel("Referencias:"));
-		leyenda.add(libre);
-		leyenda.add(ocupada);
-		leyenda.add(new JLabel("   |   Un clic sobre la mesa abre o retoma su cuenta."));
-
+		leyenda.add(new JLabel("Referencias:") {{ setFont(EstiloUI.F_SMALL); setForeground(EstiloUI.C_CAFE); }});
+		leyenda.add(lLibre);
+		leyenda.add(lOcupada);
+		JLabel hint = new JLabel("  Hacé clic en una mesa para abrir o retomar su cuenta.");
+		hint.setFont(EstiloUI.F_SMALL);
+		hint.setForeground(new Color(120, 90, 60));
+		leyenda.add(hint);
 		return leyenda;
 	}
 
-	/** Vuelve a leer las mesas y redibuja el salon. */
+	private static JLabel tag(String texto, Color color) {
+		JLabel l = new JLabel(texto);
+		l.setFont(EstiloUI.F_SMALL.deriveFont(Font.BOLD));
+		l.setOpaque(true);
+		l.setBackground(color);
+		l.setForeground(Color.WHITE);
+		l.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
+		return l;
+	}
+
 	public void refrescar() {
 		if (ventana.getEmpleadoActual() != null) {
-			lblSesion.setText("Atiende: " + ventana.getEmpleadoActual().getNombre());
+			lblSesion.setText("Atiende:  " + ventana.getEmpleadoActual().getNombre());
 		}
 
 		grillaMesas.removeAll();
 
 		try {
-			// Una sola lectura a la base, que ademas deja el cache actualizado.
 			Restaurante.getInstancia().refrescarMesas();
 			List<Mesa> mesas = Restaurante.getInstancia().listarMesasDeCache();
 
 			if (mesas.isEmpty()) {
-				grillaMesas.add(new JLabel("No hay mesas cargadas. Ejecute el script SQL."));
+				grillaMesas.add(new JLabel("No hay mesas. Ejecute el script SQL."));
 			}
-
-			for (int i = 0; i < mesas.size(); i++) {
-				grillaMesas.add(crearBotonMesa(mesas.get(i)));
+			for (Mesa mesa : mesas) {
+				grillaMesas.add(crearBotonMesa(mesa));
 			}
-
 		} catch (AccesoDatosException e) {
 			ventana.mostrarError(e.getMessage());
 		}
@@ -165,20 +149,24 @@ public class PanelMesas extends JPanel {
 	}
 
 	private JButton crearBotonMesa(final Mesa mesa) {
-		String estado = mesa.isOcupada() ? "OCUPADA" : "LIBRE";
-		Color fondo = mesa.isOcupada() ? ROJO_OCUPADA : VERDE_LIBRE;
+		boolean ocupada = mesa.isOcupada();
+		Color fondo = ocupada ? EstiloUI.C_OCUPADA : EstiloUI.C_LIBRE;
+		String estado = ocupada ? "OCUPADA" : "LIBRE";
 
-		JButton boton = new JButton("<html><center><b style='font-size:13pt'>Mesa " + mesa.getNumero()
-				+ "</b><br><font size=2>" + mesa.getCapacidad() + " pers. &bull; "
-				+ mesa.getSector() + "<br><b>" + estado + "</b></font></center></html>");
+		JButton boton = new JButton(
+				"<html><center>"
+				+ "<span style='font-size:16pt; font-weight:bold;'>Mesa " + mesa.getNumero() + "</span><br>"
+				+ "<span style='font-size:9pt;'>" + mesa.getCapacidad() + " pers. &bull; " + mesa.getSector() + "</span><br>"
+				+ "<span style='font-size:9pt; font-weight:bold;'>" + estado + "</span>"
+				+ "</center></html>");
 
-		boton.setPreferredSize(new Dimension(140, 100));
+		boton.setPreferredSize(new Dimension(160, 110));
 		boton.setBackground(fondo);
 		boton.setForeground(Color.WHITE);
 		boton.setOpaque(true);
 		boton.setBorderPainted(false);
 		boton.setFocusPainted(false);
-		boton.setHorizontalAlignment(SwingConstants.CENTER);
+		boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
 		boton.addActionListener(new ActionListener() {
 			@Override
@@ -186,26 +174,18 @@ public class PanelMesas extends JPanel {
 				abrirORetomar(mesa);
 			}
 		});
-
 		return boton;
 	}
 
-	/**
-	 * Si la mesa tiene una cuenta abierta la retoma; si no, abre una nueva.
-	 * Consulta siempre la base de datos antes de decidir.
-	 */
 	private void abrirORetomar(Mesa mesa) {
 		try {
 			Pedido existente = Caja.getInstancia().buscarCuentaAbierta(mesa.getNumero());
-
 			if (existente != null) {
 				ventana.irAPedido(existente);
 				return;
 			}
-
 			Pedido nuevo = Caja.getInstancia().abrirMesa(mesa, ventana.getEmpleadoActual());
 			ventana.irAPedido(nuevo);
-
 		} catch (MesaOcupadaException e) {
 			ventana.mostrarError(e.getMessage());
 			refrescar();

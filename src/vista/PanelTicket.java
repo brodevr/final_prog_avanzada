@@ -1,23 +1,9 @@
 package vista;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
-/**
- * Muestra el texto que devuelve cualquier objeto Imprimible: tanto el ticket de
- * un pedido como el resultado de un reporte.
- *
- * El panel no sabe cual de los dos esta mostrando, y eso es justamente lo que
- * aporta la interfaz Imprimible: un solo panel sirve para las dos cosas.
- */
 public class PanelTicket extends JPanel {
 
 	private static final long serialVersionUID = 1L;
@@ -27,18 +13,38 @@ public class PanelTicket extends JPanel {
 
 	public PanelTicket(VentanaPrincipal ventana) {
 		this.ventana = ventana;
-		setLayout(new BorderLayout(10, 10));
-		setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+		setLayout(new BorderLayout(0, 0));
+		setBackground(EstiloUI.C_CREMA);
 
+		// Cabecera
+		JPanel cab = new JPanel(new BorderLayout());
+		cab.setBackground(EstiloUI.C_NAVBAR);
+		cab.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+		JLabel titulo = new JLabel("Ticket de consumo");
+		titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+		titulo.setForeground(Color.WHITE);
+		cab.add(titulo, BorderLayout.WEST);
+		add(cab, BorderLayout.NORTH);
+
+		// Área de texto
 		areaTexto = new JTextArea();
 		areaTexto.setEditable(false);
-		areaTexto.setFont(new Font("Monospaced", Font.PLAIN, 13));
-		add(new JScrollPane(areaTexto), BorderLayout.CENTER);
+		areaTexto.setFont(EstiloUI.F_MONO);
+		areaTexto.setBackground(Color.WHITE);
+		areaTexto.setForeground(EstiloUI.C_CAFE);
+		areaTexto.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
 
-		JPanel botones = new JPanel();
-		JButton btnVolver = new JButton("Volver al salon");
-		botones.add(btnVolver);
-		add(botones, BorderLayout.SOUTH);
+		JScrollPane sp = EstiloUI.scroll(areaTexto);
+		sp.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, EstiloUI.C_BORDE));
+		add(sp, BorderLayout.CENTER);
+
+		// Pie
+		JPanel pie = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 10));
+		pie.setBackground(new Color(248, 242, 234));
+		pie.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
+		JButton btnVolver = EstiloUI.btnPrimario("← Volver al salon");
+		pie.add(btnVolver);
+		add(pie, BorderLayout.SOUTH);
 
 		btnVolver.addActionListener(new ActionListener() {
 			@Override

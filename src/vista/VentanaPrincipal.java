@@ -49,10 +49,10 @@ public class VentanaPrincipal extends JFrame {
 	private PanelTicket panelTicket;
 
 	public VentanaPrincipal() {
-		setTitle("Restaurante La Esquina - Sistema de Gestion");
+		setTitle("Cafetería La Esquina - Sistema de Gestión");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setPreferredSize(new Dimension(980, 640));
-		setMinimumSize(new Dimension(880, 580));
+		setPreferredSize(new Dimension(1060, 680));
+		setMinimumSize(new Dimension(920, 600));
 
 		cardLayout = new CardLayout();
 		contenedor = new JPanel(cardLayout);
@@ -149,9 +149,9 @@ public class VentanaPrincipal extends JFrame {
 	public void setEmpleadoActual(Empleado empleadoActual) {
 		this.empleadoActual = empleadoActual;
 		if (empleadoActual != null) {
-			setTitle("Restaurante La Esquina  |  " + empleadoActual.getNombre());
+			setTitle("Cafetería La Esquina  |  " + empleadoActual.getNombre());
 		} else {
-			setTitle("Restaurante La Esquina - Sistema de Gestion");
+			setTitle("Cafetería La Esquina - Sistema de Gestión");
 		}
 	}
 
