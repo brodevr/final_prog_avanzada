@@ -8,7 +8,7 @@ import java.util.List;
  *
  * Cumple el requisito 4 de la consigna ("implementar un metodo generico util
  * para el sistema"). Los metodos son genericos de verdad: no saben nada del
- * dominio del restaurante y sirven para cualquier tipo de dato.
+ * dominio del cafe y sirven para cualquier tipo de dato.
  */
 public class ColeccionUtil {
 

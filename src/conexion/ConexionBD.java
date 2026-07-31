@@ -27,7 +27,7 @@ public class ConexionBD {
 	// AJUSTAR ESTOS TRES VALORES SI TU MySQL TIENE OTRO USUARIO O CLAVE
 	// ------------------------------------------------------------------
 	private static final String URL =
-			"jdbc:mysql://localhost:3306/restaurante_final?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+			"jdbc:mysql://localhost:3306/cafe_final?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
 	private static final String USUARIO = "root";
 	private static final String CLAVE = "";
 
@@ -61,7 +61,7 @@ public class ConexionBD {
 					+ "mysql-connector-j.jar este agregado al Build Path del proyecto.", e);
 		} catch (SQLException e) {
 			throw new AccesoDatosException(
-					"No se pudo conectar a la base de datos 'restaurante_final'. "
+					"No se pudo conectar a la base de datos 'cafe_final'. "
 					+ "Verifique que el servidor MySQL este iniciado y que el usuario "
 					+ "y la clave configurados en ConexionBD sean correctos.", e);
 		}

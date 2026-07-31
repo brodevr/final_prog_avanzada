@@ -6,10 +6,11 @@ import java.util.List;
 import javax.swing.*;
 
 import controlador.Caja;
-import controlador.Restaurante;
+import controlador.Cafe;
 import excepciones.AccesoDatosException;
 import excepciones.MesaOcupadaException;
 import excepciones.MontoInvalidoException;
+import modelo.Empleado;
 import modelo.Mesa;
 import modelo.Pedido;
 
@@ -20,6 +21,12 @@ public class PanelMesas extends JPanel {
 	private VentanaPrincipal ventana;
 	private JPanel grillaMesas;
 	private JLabel lblSesion;
+
+	// Botones de gestion: solo los ve el ADMIN. Se guardan como atributos
+	// porque la navbar se arma en el constructor, antes de saber quien entra.
+	private JButton btnCarta;
+	private JButton btnEmp;
+	private JButton btnRep;
 
 	public PanelMesas(VentanaPrincipal ventana) {
 		this.ventana = ventana;
@@ -47,7 +54,8 @@ public class PanelMesas extends JPanel {
 		nav.setBackground(EstiloUI.C_NAVBAR);
 		nav.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
 
-		JLabel logo = new JLabel("☕  Cafetería La Esquina");
+		JLabel logo = new JLabel("  Café La Esquina",
+				IconoCafe.icono(26, new Color(210, 175, 130)), SwingConstants.LEFT);
 		logo.setFont(new Font("Segoe UI", Font.BOLD, 16));
 		logo.setForeground(Color.WHITE);
 
@@ -55,25 +63,28 @@ public class PanelMesas extends JPanel {
 		lblSesion.setFont(EstiloUI.F_SMALL);
 		lblSesion.setForeground(new Color(170, 140, 105));
 
-		JButton btnCarta = EstiloUI.btnNavbar("Carta");
-		JButton btnEmp   = EstiloUI.btnNavbar("Empleados");
-		JButton btnRep   = EstiloUI.btnNavbar("Reportes");
+		btnCarta = EstiloUI.btnNavbar("Carta");
+		btnEmp   = EstiloUI.btnNavbar("Empleados");
+		btnRep   = EstiloUI.btnNavbar("Reportes");
 		JButton btnCerrar= EstiloUI.btnNavbar("Cerrar sesion");
 		JButton btnSalir = EstiloUI.btnRojo("Salir");
 		btnSalir.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
 
+		// Tres grupos separados por espacios distintos: gestion, sesion y
+		// salida. El salto grande antes de "Cerrar sesion" y "Salir" los aleja
+		// de los de navegacion, que son los que se usan todo el tiempo.
 		nav.add(logo);
-		nav.add(Box.createHorizontalStrut(16));
+		nav.add(Box.createHorizontalStrut(20));
 		nav.add(lblSesion);
 		nav.add(Box.createHorizontalGlue());
 		nav.add(btnCarta);
-		nav.add(Box.createHorizontalStrut(4));
+		nav.add(Box.createHorizontalStrut(10));
 		nav.add(btnEmp);
-		nav.add(Box.createHorizontalStrut(4));
+		nav.add(Box.createHorizontalStrut(10));
 		nav.add(btnRep);
-		nav.add(Box.createHorizontalStrut(16));
+		nav.add(Box.createHorizontalStrut(32));
 		nav.add(btnCerrar);
-		nav.add(Box.createHorizontalStrut(8));
+		nav.add(Box.createHorizontalStrut(14));
 		nav.add(btnSalir);
 
 		btnCarta.addActionListener(new ActionListener() {
@@ -123,16 +134,34 @@ public class PanelMesas extends JPanel {
 		return l;
 	}
 
-	public void refrescar() {
-		if (ventana.getEmpleadoActual() != null) {
-			lblSesion.setText("Atiende:  " + ventana.getEmpleadoActual().getNombre());
+	/**
+	 * Muestra u oculta las opciones de gestion segun el perfil de quien inicio
+	 * sesion. Se llama en cada refrescar() porque el mismo panel se reutiliza
+	 * entre sesiones: si no, el mozo heredaria los botones del admin anterior.
+	 */
+	private void aplicarPermisos() {
+		Empleado actual = ventana.getEmpleadoActual();
+		if (actual == null) {
+			return;
 		}
+
+		lblSesion.setText("Atiende:  " + actual.getNombre()
+				+ "   (" + actual.getRol().getEtiqueta() + ")");
+
+		boolean admin = actual.esAdmin();
+		btnCarta.setVisible(admin);
+		btnEmp.setVisible(admin);
+		btnRep.setVisible(admin);
+	}
+
+	public void refrescar() {
+		aplicarPermisos();
 
 		grillaMesas.removeAll();
 
 		try {
-			Restaurante.getInstancia().refrescarMesas();
-			List<Mesa> mesas = Restaurante.getInstancia().listarMesasDeCache();
+			Cafe.getInstancia().refrescarMesas();
+			List<Mesa> mesas = Cafe.getInstancia().listarMesasDeCache();
 
 			if (mesas.isEmpty()) {
 				grillaMesas.add(new JLabel("No hay mesas. Ejecute el script SQL."));

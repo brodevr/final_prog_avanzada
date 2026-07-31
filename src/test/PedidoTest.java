@@ -19,6 +19,7 @@ import modelo.EstadoPedido;
 import modelo.Mesa;
 import modelo.Pedido;
 import modelo.Plato;
+import modelo.Rol;
 import promociones.DescuentoMontoFijo;
 import promociones.DescuentoPorcentaje;
 
@@ -43,7 +44,7 @@ class PedidoTest {
 	@BeforeEach
 	void prepararEscenario() {
 		Mesa mesa = new Mesa(1, 4, "Salon");
-		Empleado mozo = new Empleado(1, "Martin Rodriguez", "mrodriguez", "1234", true);
+		Empleado mozo = new Empleado(1, "Martin Rodriguez", "mrodriguez", "1234", true, Rol.EMPLEADO);
 		pedido = new Pedido(mesa, mozo);
 
 		// Se asignan ids distintos porque el pedido agrupa las lineas por id.

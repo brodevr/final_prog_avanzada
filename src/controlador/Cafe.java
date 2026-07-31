@@ -16,22 +16,23 @@ import modelo.Empleado;
 import modelo.ItemMenu;
 import modelo.Mesa;
 import modelo.Plato;
+import modelo.Rol;
 
 /**
  * Controlador de configuracion del sistema: login y ABM de mesas, menu y
  * empleados. Implementa SINGLETON.
  *
- * POR QUE SINGLETON ACA TAMBIEN: la configuracion del restaurante es unica.
- * No tiene sentido que existan dos objetos Restaurante con dos menues
+ * POR QUE SINGLETON ACA TAMBIEN: la configuracion del cafe es unica.
+ * No tiene sentido que existan dos objetos Cafe con dos menues
  * distintos. Ademas permite mantener en memoria el mapa de mesas sin volver a
  * consultarlo desde cada pantalla.
  *
  * Su responsabilidad es VALIDAR las reglas de negocio antes de tocar los DAO.
  * La vista no valida datos: solo los recolecta y los pasa.
  */
-public class Restaurante {
+public class Cafe {
 
-	private static Restaurante instancia;
+	private static Cafe instancia;
 
 	private EmpleadoDAO empleadoDAO;
 	private MesaDAO mesaDAO;
@@ -40,16 +41,16 @@ public class Restaurante {
 	/** Cache de mesas por numero. Cumple el requisito de usar un HashMap. */
 	private Map<Integer, Mesa> mesasPorNumero;
 
-	private Restaurante() {
+	private Cafe() {
 		this.empleadoDAO = new EmpleadoDAO();
 		this.mesaDAO = new MesaDAO();
 		this.itemMenuDAO = new ItemMenuDAO();
 		this.mesasPorNumero = new HashMap<Integer, Mesa>();
 	}
 
-	public static Restaurante getInstancia() {
+	public static Cafe getInstancia() {
 		if (instancia == null) {
-			instancia = new Restaurante();
+			instancia = new Cafe();
 		}
 		return instancia;
 	}
@@ -241,11 +242,14 @@ public class Restaurante {
 	// ABM DE EMPLEADOS
 	// ==================================================================
 
-	public void altaEmpleado(String nombre, String usuario, String clave)
+	public void altaEmpleado(String nombre, String usuario, String clave, Rol rol)
 			throws AccesoDatosException, MontoInvalidoException {
 
 		validarEmpleado(nombre, usuario, clave);
-		empleadoDAO.insertar(new Empleado(nombre.trim(), usuario.trim(), clave));
+		if (rol == null) {
+			throw new MontoInvalidoException("Seleccione el perfil del empleado.");
+		}
+		empleadoDAO.insertar(new Empleado(nombre.trim(), usuario.trim(), clave, rol));
 	}
 
 	public void modificarEmpleado(Empleado empleado)
@@ -264,6 +268,11 @@ public class Restaurante {
 
 	public void darDeBajaEmpleado(int id) throws AccesoDatosException {
 		empleadoDAO.darDeBaja(id);
+	}
+
+	/** Activa o desactiva al empleado. Ver EmpleadoDAO.cambiarEstado. */
+	public void cambiarEstadoEmpleado(int id, boolean activo) throws AccesoDatosException {
+		empleadoDAO.cambiarEstado(id, activo);
 	}
 
 	public List<Empleado> listarEmpleados() throws AccesoDatosException {

@@ -165,7 +165,7 @@ public class Pedido implements Imprimible {
 	 *    los 2 minutos de barra),
 	 *  - resuelve el maximo con el metodo generico ColeccionUtil.obtenerMaximo.
 	 *
-	 * Se toma el maximo y no la suma porque en un restaurante la comanda sale
+	 * Se toma el maximo y no la suma porque en un cafe la comanda sale
 	 * completa a la mesa: la demora es la del producto mas lento.
 	 */
 	public int calcularDemoraEstimada() {
@@ -198,7 +198,7 @@ public class Pedido implements Imprimible {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("==================================================\n");
-		sb.append("            RESTAURANTE LA ESQUINA\n");
+		sb.append("            CAFE LA ESQUINA\n");
 		sb.append("         Ticket de consumo - NO FISCAL\n");
 		sb.append("==================================================\n");
 		sb.append("Pedido N.  : ").append(id).append("\n");

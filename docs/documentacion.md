@@ -1,4 +1,4 @@
-# Sistema de Gestión de Cafetería
+# Sistema de Gestión de Café
 
 **Examen Final — Programación Avanzada**
 Carrera: Analista en Sistemas · Escuela Superior de Arte Multimedial Da Vinci
@@ -9,16 +9,17 @@ Tecnologías: Java (Swing) · MySQL · JDBC
 
 ## 1. Descripción general y tema elegido
 
-El sistema administra la operación diaria de **Cafetería La Esquina**: el estado de las mesas del salón, la carta de productos, el personal, y el ciclo completo de una cuenta desde que se abre la mesa hasta que se cobra.
+El sistema administra la operación diaria de **Café La Esquina**: el estado de las mesas del salón, la carta de productos, el personal, y el ciclo completo de una cuenta desde que se abre la mesa hasta que se cobra.
 
-El tema se eligió porque su proceso central tiene un **ciclo de apertura y cierre nativo del dominio**: en una cafetería literalmente se "abre" y se "cierra" una mesa. Eso permite cumplir el requisito 2 de la consigna sin forzar la interpretación. Además genera datos ricos para reportes: qué se vendió, cuándo, quién lo atendió y por cuánto.
+El tema se eligió porque su proceso central tiene un **ciclo de apertura y cierre nativo del dominio**: en un café literalmente se "abre" y se "cierra" una mesa. Eso permite cumplir el requisito 2 de la consigna sin forzar la interpretación. Además genera datos ricos para reportes: qué se vendió, cuándo, quién lo atendió y por cuánto.
 
 ### Entidades principales
 
 | Entidad | Rol |
 |---|---|
 | `Mesa` | Mesa física del salón. Su número es el identificador natural |
-| `Empleado` | Mozo o encargado que opera el sistema |
+| `Empleado` | Mozo o encargado que opera el sistema. Su `Rol` define qué puede hacer |
+| `Rol` | Enum: `ADMIN` o `EMPLEADO`. Determina a qué pantallas se accede |
 | `ItemMenu` | Producto de la carta. Es abstracto: se concreta en `Plato` o `Bebida` |
 | `Pedido` | Cuenta de una mesa. Es la entidad que implementa el ciclo apertura/cierre |
 | `DetallePedido` | Línea de la comanda: un producto, una cantidad y su precio de venta |
@@ -51,7 +52,7 @@ promociones   Estrategias de descuento (patrón Strategy)
 excepciones   Las cinco excepciones propias del sistema
 conexion      ConexionBD, el Singleton de acceso a MySQL
 dao           Un DAO por entidad, más ReporteDAO para las consultas de gestión
-controlador   Restaurante y Caja: la lógica de negocio y las validaciones
+controlador   Cafe y Caja: la lógica de negocio y las validaciones
 vista         VentanaPrincipal (JFrame) y los siete paneles
 util          ColeccionUtil, con los métodos genéricos
 test          Pruebas JUnit 5 del modelo de dominio
@@ -159,7 +160,7 @@ Es un error frecuente pasarle otra constante ahí (por ejemplo `Statement.RETURN
 
 `DetallePedido` guarda su propio `precioUnitario` en lugar de leerlo del producto cada vez que se muestra el ticket.
 
-El motivo es la integridad histórica: si mañana el restaurante aumenta la milanesa, los tickets emitidos la semana pasada deben seguir mostrando el precio que el cliente efectivamente pagó. Si el detalle leyera el precio actual del producto, toda la facturación histórica cambiaría sola con cada aumento de precios.
+El motivo es la integridad histórica: si mañana el cafe aumenta la milanesa, los tickets emitidos la semana pasada deben seguir mostrando el precio que el cliente efectivamente pagó. Si el detalle leyera el precio actual del producto, toda la facturación histórica cambiaría sola con cada aumento de precios.
 
 Por la misma razón, la tabla `pedido` guarda `subtotal`, `descuento` y `total` ya calculados.
 
@@ -170,9 +171,32 @@ Un producto que ya se vendió no puede borrarse: la clave foránea de `detalle_p
 Por eso hay dos operaciones distintas y explícitas, en lugar de una que adivine:
 
 - **Eliminar** (`DELETE`): borrado físico. Solo funciona si el producto nunca se vendió;
-- **Dar de baja** (`UPDATE disponible = FALSE`): baja lógica. Sale de la carta pero sigue apareciendo en los pedidos viejos. Es la que se usa normalmente.
+- **Desactivar** (`UPDATE disponible = FALSE`): baja lógica. Sale de la carta pero sigue apareciendo en los pedidos viejos. Es la que se usa normalmente.
 
 Lo mismo aplica a los empleados: el campo `activo` permite que un mozo deje de operar sin perder la trazabilidad de a quién correspondía cada venta.
+
+**La baja lógica es reversible, y la interfaz lo refleja.** En vez de un botón fijo que dijera "Baja lógica", los dos ABM tienen un botón que cambia según la fila seleccionada: dice `Desactivar` si el registro está activo y `Activar` si no. Sin selección queda deshabilitado, en lugar de mostrar una etiqueta que no corresponde a nada.
+
+El cambio no es solo de texto. "Dar de baja" nombra la operación desde el punto de vista del sistema y solo va en un sentido; `EmpleadoDAO` de hecho únicamente sabía desactivar. Ahora expone `cambiarEstado(id, boolean)` —y `darDeBaja()` delega ahí— de modo que un empleado que reingresa se reactiva sin tener que tocar la base a mano. `ItemMenuDAO` ya seguía esa forma con `cambiarDisponibilidad()`, así que las dos capas quedaron simétricas.
+
+En la barra de acciones, `Eliminar` está separado del resto y alineado a la derecha: es la única operación irreversible del panel y no conviene tenerla pegada a `Desactivar`.
+
+---
+
+### 3.7 Roles y control de acceso
+
+No todos los que usan el sistema hacen lo mismo. Un mozo toma pedidos y cobra; el encargado además administra la carta, el personal y mira la facturación. Modelar eso con un `boolean esAdmin` habría sido más corto, pero un enum `Rol` documenta los valores posibles, no admite un tercer estado inválido y deja lugar a que mañana aparezca un tercer perfil sin cambiar la firma de nada.
+
+`Rol.desdeTexto()` traduce el `ENUM` de MySQL al enum de Java y, ante un valor nulo o desconocido, devuelve `EMPLEADO`. La decisión es deliberada: si el dato viene corrupto, el sistema **cierra** permisos en lugar de abrirlos.
+
+El control se aplica en dos niveles, y esa duplicación es intencional:
+
+1. **`PanelMesas`** esconde los botones `Carta`, `Empleados` y `Reportes` cuando quien inició sesión no es `ADMIN`. Es lo que hace que la interfaz se vea limpia.
+2. **`VentanaPrincipal.exigirAdmin()`** vuelve a verificar el rol antes de mostrar cualquiera de esas tres pantallas.
+
+El segundo nivel es el que realmente decide. **Ocultar un botón no es un control de acceso**: es una comodidad visual. Si la navegación se alcanzara por otro camino —un atajo, una llamada desde otro panel, un cambio futuro— la validación de `exigirAdmin()` sigue estando, y está escrita una sola vez para las tres pantallas.
+
+La verificación se rehace en cada `refrescar()` de `PanelMesas`, no una sola vez al construir el panel: como el panel se reutiliza entre sesiones, si se calculara al crearlo un mozo heredaría los botones del administrador que usó el sistema antes.
 
 ---
 
@@ -188,7 +212,7 @@ Se implementa con tres piezas:
 2. atributo `private static ConexionBD instancia`, donde la clase guarda su única instancia;
 3. método `public static getInstancia()`, que la crea la primera vez y después devuelve siempre la misma.
 
-**`Restaurante`** y **`Caja`** también son Singletons. La configuración del restaurante es única — no tiene sentido que existan dos objetos `Restaurante` con dos cartas distintas — y así los paneles comparten el mismo estado sin necesidad de pasárselo entre sí.
+**`Cafe`** y **`Caja`** también son Singletons. La configuración del cafe es única — no tiene sentido que existan dos objetos `Cafe` con dos cartas distintas — y así los paneles comparten el mismo estado sin necesidad de pasárselo entre sí.
 
 ### 4.2 DAO — opcional, implementado
 
@@ -308,11 +332,21 @@ Los cuatro reportes consideran únicamente pedidos `CERRADO`: los `ABIERTO` toda
 | `PanelMenuABM` | ABM completo de la carta |
 | `PanelEmpleadosABM` | ABM completo del personal |
 | `PanelReportes` | Los cuatro reportes con filtro de fechas |
-| `PanelTicket` | Muestra el ticket de consumo emitido |
+| `PanelTicket` | Muestra el ticket emitido y permite imprimirlo |
 
 `PanelMesas` cumple el requisito del menú principal: cada mesa es un botón (verde si está libre, rojo si está ocupada) y la barra superior da acceso a todas las demás funciones. Un clic sobre una mesa abre su cuenta o retoma la existente — es la puerta de entrada al ciclo de apertura y cierre.
 
+**La barra superior se arma según el perfil**: un `ADMIN` ve `Carta`, `Empleados` y `Reportes`; un `EMPLEADO` solo ve el salón, `Cerrar sesion` y `Salir` (§3.7). El nombre y el rol de quien opera se muestran tanto en la barra como en el título de la ventana.
+
 Los diálogos están centralizados en `VentanaPrincipal.mostrarError()`, `mostrarInfo()` y `confirmar()`, para que todos los paneles avisen de la misma manera.
+
+### Impresión del ticket
+
+`PanelTicket` muestra el comprobante en un `JTextArea` y el botón **Imprimir** llama a `JTextComponent.print()`, que arma la página y abre el diálogo de impresión del sistema operativo. No hizo falta ninguna librería externa: el propio componente sabe imprimirse. Devuelve `false` si el usuario cancela, caso que se trata como lo que es —una cancelación, no un error— y no muestra ningún aviso. Como *Microsoft Print to PDF* aparece en Windows como una impresora más, del mismo botón sale el PDF cuando no hay impresora física.
+
+### El icono
+
+La taza de café que se ve en el login, en la barra del salón y en la ventana no es un `.png`: es `IconoCafe`, que la dibuja con Java2D. Así el entregable sigue siendo solo código fuente —no hay carpeta de recursos que agregar al Build Path ni icono roto si el archivo no viaja en el ZIP— y el dibujo sale nítido en cualquier tamaño, incluidos los cinco que Windows pide para la barra de tareas. Además evita depender del emoji `☕`, que se ve distinto en cada máquina según la fuente instalada.
 
 ---
 
@@ -336,7 +370,7 @@ Para verificar las excepciones se usa el patrón `try` / `fail` / `catch` en lug
 
 Paso a paso detallado en **`INSTRUCCIONES-ECLIPSE.md`**. En resumen:
 
-1. ejecutar `sql/restaurante_final.sql` en MySQL;
+1. ejecutar `sql/cafe_final.sql` en MySQL;
 2. importar el proyecto en Eclipse;
 3. agregar `mysql-connector-j.jar` al Build Path;
 4. si el usuario o la clave de MySQL no son `root` / vacío, ajustar las constantes al inicio de `ConexionBD`;
@@ -352,7 +386,7 @@ Paso a paso detallado en **`INSTRUCCIONES-ECLIPSE.md`**. En resumen:
 | 1 | Diagrama de clases UML | `docs/uml-clases.mermaid` |
 | 1 | Herencia, polimorfismo, abstracción | `ItemMenu` → `Plato`, `Bebida` |
 | 1 | Al menos una interfaz y una abstracta | `Imprimible`, `Descuento` / `ItemMenu` |
-| 2 | ABM completo en ≥2 entidades | `ItemMenu`, `Empleado` y `Mesa` — tres |
+| 2 | ABM completo en ≥2 entidades | `ItemMenu` y `Empleado`, ambos con alta, actualización, activación/desactivación, eliminación y búsqueda desde su panel |
 | 2 | Proceso con ciclo apertura/cierre | `Caja.abrirMesa()` → `Caja.cerrarCuenta()` |
 | 2 | *Adicional:* reportes o estadísticas | Cuatro reportes con rango de fechas |
 | 3 | Excepciones en operaciones críticas | Paquete `excepciones`, cinco clases |
@@ -360,11 +394,13 @@ Paso a paso detallado en **`INSTRUCCIONES-ECLIPSE.md`**. En resumen:
 | 4 | Colecciones genéricas | `ArrayList<DetallePedido>`, `HashMap<Integer, Mesa>` |
 | 4 | *Adicional:* método genérico | `ColeccionUtil.obtenerMaximo()` y `primerosN()` |
 | 5 | JDBC | `ConexionBD` + cinco DAO |
-| 5 | CRUD en todas las entidades | Alta, baja, modificación y consulta en las cuatro |
+| 5 | CRUD en todas las entidades | Alta, baja, modificación y consulta en las cuatro: `Empleado`, `ItemMenu`, `Mesa` y `Pedido` |
 | 6 | Singleton para la conexión | `ConexionBD` |
 | 6 | *Opcional:* DAO y DTO | DAO implementado; DTO evaluado y descartado (§4.3) |
 | 6 | *Opcional:* patrón adicional | Strategy en `promociones` |
 | 7 | Interfaz gráfica JFrame | `VentanaPrincipal` con `CardLayout` |
-| 7 | Menú principal a todas las funciones | `PanelMesas` |
+| 7 | Menú principal a todas las funciones | `PanelMesas`, con la barra filtrada por rol (§3.7) |
 
-**Entregables:** código fuente (`src/`) · UML de clases y de secuencia (`docs/`) · script SQL (`sql/`) · esta documentación · capturas de pantalla *(pendientes: sacar al ejecutar)*.
+**Nota sobre `Mesa`:** tiene CRUD completo en `MesaDAO` y en el controlador (`altaMesa`, `modificarMesa`, `eliminarMesa`, `buscarMesa`), y por eso cuenta para el requisito 5. No tiene un panel ABM propio: se opera desde el plano del salón. La consigna pide ABM completo en **al menos dos** entidades y esas son `ItemMenu` y `Empleado`, ambas con pantalla propia.
+
+**Entregables:** código fuente (`src/`) · UML de clases y de secuencia (`docs/`) · script SQL (`sql/`) · esta documentación · capturas de pantalla *(pendientes: sacar al ejecutar, ver §9 de `INSTRUCCIONES-ECLIPSE.md`)*.

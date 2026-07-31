@@ -5,7 +5,7 @@ package modelo;
  * vendio.
  *
  * DECISION DE DISENO IMPORTANTE: precioUnitario se guarda como copia y no se
- * lee del item cada vez. Si manana el restaurante cambia el precio de la
+ * lee del item cada vez. Si manana el cafe cambia el precio de la
  * milanesa, los tickets ya emitidos deben seguir mostrando el precio viejo.
  * Congelar el precio en el detalle es lo que garantiza esa integridad
  * historica.

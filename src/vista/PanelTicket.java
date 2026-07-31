@@ -2,6 +2,7 @@ package vista;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.print.PrinterException;
 import javax.swing.*;
 
 public class PanelTicket extends JPanel {
@@ -42,16 +43,48 @@ public class PanelTicket extends JPanel {
 		JPanel pie = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 10));
 		pie.setBackground(new Color(248, 242, 234));
 		pie.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
+		JButton btnImprimir = EstiloUI.btnVerde("Imprimir");
 		JButton btnVolver = EstiloUI.btnPrimario("← Volver al salon");
+		pie.add(btnImprimir);
 		pie.add(btnVolver);
 		add(pie, BorderLayout.SOUTH);
 
+		btnImprimir.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imprimir();
+			}
+		});
 		btnVolver.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				PanelTicket.this.ventana.irAMesas();
 			}
 		});
+	}
+
+	/**
+	 * Manda el ticket a la impresora.
+	 *
+	 * JTextArea ya sabe imprimirse solo: print() arma la pagina con el texto y
+	 * abre el dialogo de impresion del sistema. Como "Microsoft Print to PDF"
+	 * figura ahi como una impresora mas, de este mismo boton sale el PDF si no
+	 * hay una impresora fisica a mano.
+	 */
+	private void imprimir() {
+		if (areaTexto.getText().trim().isEmpty()) {
+			ventana.mostrarError("No hay ningun ticket para imprimir.");
+			return;
+		}
+		try {
+			// Devuelve false si el usuario cancela el dialogo: en ese caso no
+			// hay nada para avisar, la cancelacion no es un error.
+			if (areaTexto.print()) {
+				ventana.mostrarInfo("El ticket se envio a la impresora.");
+			}
+		} catch (PrinterException e) {
+			ventana.mostrarError("No se pudo imprimir el ticket: " + e.getMessage());
+		}
 	}
 
 	public void mostrarTexto(String texto) {

@@ -8,10 +8,11 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 
-import controlador.Restaurante;
+import controlador.Cafe;
 import excepciones.AccesoDatosException;
 import excepciones.MontoInvalidoException;
 import modelo.Empleado;
+import modelo.Rol;
 
 public class PanelEmpleadosABM extends JPanel {
 
@@ -26,8 +27,12 @@ public class PanelEmpleadosABM extends JPanel {
 	private JTextField txtNombre;
 	private JTextField txtUsuario;
 	private JTextField txtClave;
+	private JComboBox<Rol> cmbRol;
 	private JCheckBox chkActivo;
 	private JTextField txtBuscar;
+
+	/** Cambia entre "Activar" y "Desactivar" segun la fila elegida. */
+	private JButton btnEstado;
 
 	public PanelEmpleadosABM(VentanaPrincipal ventana) {
 		this.ventana = ventana;
@@ -44,7 +49,7 @@ public class PanelEmpleadosABM extends JPanel {
 		cab.setBackground(EstiloUI.C_NAVBAR);
 		cab.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
 
-		JLabel titulo = new JLabel("Personal de la cafetería");
+		JLabel titulo = new JLabel("Personal del café");
 		titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		titulo.setForeground(Color.WHITE);
 		cab.add(titulo, BorderLayout.WEST);
@@ -77,7 +82,7 @@ public class PanelEmpleadosABM extends JPanel {
 	}
 
 	private JScrollPane construirTabla() {
-		String[] cols = { "ID", "Nombre", "Usuario", "Activo" };
+		String[] cols = { "ID", "Nombre", "Usuario", "Perfil", "Activo" };
 		modeloTabla = new DefaultTableModel(cols, 0) {
 			private static final long serialVersionUID = 1L;
 			@Override public boolean isCellEditable(int r, int c) { return false; }
@@ -102,13 +107,17 @@ public class PanelEmpleadosABM extends JPanel {
 		contenedor.setBackground(Color.WHITE);
 		contenedor.add(EstiloUI.barraTitulo("Datos del empleado"), BorderLayout.NORTH);
 
-		JPanel campos = new JPanel(new GridLayout(2, 4, 10, 10));
+		JPanel campos = new JPanel(new GridLayout(3, 4, 10, 10));
 		campos.setBackground(Color.WHITE);
 		campos.setBorder(BorderFactory.createEmptyBorder(14, 16, 10, 16));
 
 		txtNombre  = EstiloUI.campo(0);
 		txtUsuario = EstiloUI.campo(0);
 		txtClave   = EstiloUI.campo(0);
+		cmbRol     = new JComboBox<Rol>(Rol.values());
+		cmbRol.setFont(EstiloUI.F_NORMAL);
+		cmbRol.setBackground(Color.WHITE);
+		cmbRol.setSelectedItem(Rol.EMPLEADO);
 		chkActivo  = new JCheckBox("Activo", true);
 		chkActivo.setFont(EstiloUI.F_NORMAL);
 		chkActivo.setBackground(Color.WHITE);
@@ -116,25 +125,20 @@ public class PanelEmpleadosABM extends JPanel {
 		campos.add(lbl("Nombre completo:")); campos.add(txtNombre);
 		campos.add(lbl("Usuario:"));         campos.add(txtUsuario);
 		campos.add(lbl("Clave:"));           campos.add(txtClave);
+		campos.add(lbl("Perfil:"));          campos.add(cmbRol);
 		campos.add(chkActivo);               campos.add(new JLabel(""));
+		campos.add(new JLabel(""));          campos.add(new JLabel(""));
 		contenedor.add(campos, BorderLayout.CENTER);
-
-		JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
-		botones.setBackground(new Color(248, 242, 234));
-		botones.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
 
 		JButton btnNuevo    = EstiloUI.btnBorde("Limpiar");
 		JButton btnAlta     = EstiloUI.btnVerde("Dar de alta");
-		JButton btnModif    = EstiloUI.btnPrimario("Modificar");
-		JButton btnBaja     = EstiloUI.btnBorde("Baja logica");
+		JButton btnModif    = EstiloUI.btnPrimario("Actualizar");
+		btnEstado           = EstiloUI.btnBorde("Desactivar");
 		JButton btnEliminar = EstiloUI.btnRojo("Eliminar");
 
-		botones.add(btnNuevo);
-		botones.add(btnAlta);
-		botones.add(btnModif);
-		botones.add(btnBaja);
-		botones.add(btnEliminar);
-		contenedor.add(botones, BorderLayout.SOUTH);
+		contenedor.add(EstiloUI.barraAcciones(
+				new JButton[] { btnNuevo, btnAlta, btnModif, btnEstado },
+				btnEliminar), BorderLayout.SOUTH);
 
 		btnNuevo.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) { limpiarFormulario(); }
@@ -145,8 +149,8 @@ public class PanelEmpleadosABM extends JPanel {
 		btnModif.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) { modificar(); }
 		});
-		btnBaja.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent e) { darDeBaja(); }
+		btnEstado.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { cambiarEstado(); }
 		});
 		btnEliminar.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) { eliminar(); }
@@ -163,12 +167,12 @@ public class PanelEmpleadosABM extends JPanel {
 	}
 
 	public void refrescar() {
-		try { mostrar(Restaurante.getInstancia().listarEmpleados()); }
+		try { mostrar(Cafe.getInstancia().listarEmpleados()); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void buscar() {
-		try { mostrar(Restaurante.getInstancia().buscarEmpleados(txtBuscar.getText())); }
+		try { mostrar(Cafe.getInstancia().buscarEmpleados(txtBuscar.getText())); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
@@ -180,8 +184,11 @@ public class PanelEmpleadosABM extends JPanel {
 					Integer.valueOf(emp.getId()),
 					emp.getNombre(),
 					emp.getUsuario(),
+					emp.getRol().getEtiqueta(),
 					emp.isActivo() ? "SI" : "NO" });
 		}
+		// Recargar la tabla borra la seleccion: el boton tiene que acompañar.
+		actualizarBotonEstado();
 	}
 
 	private Empleado getSeleccionado() {
@@ -190,24 +197,45 @@ public class PanelEmpleadosABM extends JPanel {
 		return empleadosEnTabla.get(fila);
 	}
 
+	/**
+	 * Deja el boton de estado acorde a la fila elegida: si el empleado esta
+	 * activo ofrece desactivarlo y al reves. Sin seleccion no hay accion
+	 * posible, asi que queda deshabilitado en vez de mentir una etiqueta.
+	 */
+	private void actualizarBotonEstado() {
+		Empleado emp = getSeleccionado();
+		if (emp == null) {
+			btnEstado.setText("Desactivar");
+			btnEstado.setEnabled(false);
+			return;
+		}
+		btnEstado.setText(emp.isActivo() ? "Desactivar" : "Activar");
+		btnEstado.setEnabled(true);
+	}
+
 	private void cargarSeleccionEnFormulario() {
+		actualizarBotonEstado();
 		Empleado emp = getSeleccionado();
 		if (emp == null) return;
 		txtNombre.setText(emp.getNombre());
 		txtUsuario.setText(emp.getUsuario());
 		txtClave.setText(emp.getClave());
+		cmbRol.setSelectedItem(emp.getRol());
 		chkActivo.setSelected(emp.isActivo());
 	}
 
 	private void limpiarFormulario() {
 		txtNombre.setText(""); txtUsuario.setText(""); txtClave.setText("");
+		cmbRol.setSelectedItem(Rol.EMPLEADO);
 		chkActivo.setSelected(true); tabla.clearSelection();
+		actualizarBotonEstado();
 	}
 
 	private void darDeAlta() {
 		try {
-			Restaurante.getInstancia().altaEmpleado(txtNombre.getText(),
-					txtUsuario.getText(), txtClave.getText());
+			Cafe.getInstancia().altaEmpleado(txtNombre.getText(),
+					txtUsuario.getText(), txtClave.getText(),
+					(Rol) cmbRol.getSelectedItem());
 			ventana.mostrarInfo("Empleado dado de alta.");
 			limpiarFormulario(); refrescar();
 		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
@@ -219,23 +247,31 @@ public class PanelEmpleadosABM extends JPanel {
 		if (sel == null) { ventana.mostrarError("Seleccione un empleado de la tabla."); return; }
 		try {
 			Empleado mod = new Empleado(sel.getId(), txtNombre.getText().trim(),
-					txtUsuario.getText().trim(), txtClave.getText(), chkActivo.isSelected());
-			Restaurante.getInstancia().modificarEmpleado(mod);
+					txtUsuario.getText().trim(), txtClave.getText(), chkActivo.isSelected(),
+					(Rol) cmbRol.getSelectedItem());
+			Cafe.getInstancia().modificarEmpleado(mod);
 			ventana.mostrarInfo("Empleado modificado.");
 			refrescar();
 		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
 		} catch (AccesoDatosException e)    { ventana.mostrarError(e.getMessage()); }
 	}
 
-	private void darDeBaja() {
+	private void cambiarEstado() {
 		Empleado sel = getSeleccionado();
 		if (sel == null) { ventana.mostrarError("Seleccione un empleado de la tabla."); return; }
-		if (sel.getId() == ventana.getEmpleadoActual().getId()) {
-			ventana.mostrarError("No puede darse de baja a si mismo mientras usa el sistema.");
+
+		boolean activar = !sel.isActivo();
+
+		// Solo se controla la desactivacion: dejarse a uno mismo afuera cortaria
+		// la sesion en curso. Reactivarse no rompe nada.
+		if (!activar && sel.getId() == ventana.getEmpleadoActual().getId()) {
+			ventana.mostrarError("No puede desactivarse a si mismo mientras usa el sistema.");
 			return;
 		}
-		if (!ventana.confirmar("Dar de baja a " + sel.getNombre() + "?")) return;
-		try { Restaurante.getInstancia().darDeBajaEmpleado(sel.getId()); refrescar(); }
+
+		String accion = activar ? "Activar" : "Desactivar";
+		if (!ventana.confirmar(accion + " a " + sel.getNombre() + "?")) return;
+		try { Cafe.getInstancia().cambiarEstadoEmpleado(sel.getId(), activar); refrescar(); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
@@ -243,7 +279,7 @@ public class PanelEmpleadosABM extends JPanel {
 		Empleado sel = getSeleccionado();
 		if (sel == null) { ventana.mostrarError("Seleccione un empleado de la tabla."); return; }
 		if (!ventana.confirmar("Eliminar definitivamente a " + sel.getNombre() + "?")) return;
-		try { Restaurante.getInstancia().eliminarEmpleado(sel.getId()); limpiarFormulario(); refrescar(); }
+		try { Cafe.getInstancia().eliminarEmpleado(sel.getId()); limpiarFormulario(); refrescar(); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 }

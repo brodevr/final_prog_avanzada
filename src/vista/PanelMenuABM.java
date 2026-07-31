@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 
-import controlador.Restaurante;
+import controlador.Cafe;
 import excepciones.AccesoDatosException;
 import excepciones.MontoInvalidoException;
 import modelo.Bebida;
@@ -37,6 +37,9 @@ public class PanelMenuABM extends JPanel {
 	private JCheckBox chkDisponible;
 	private JTextField txtBuscar;
 
+	/** Cambia entre "Activar" y "Desactivar" segun la fila elegida. */
+	private JButton btnEstado;
+
 	public PanelMenuABM(VentanaPrincipal ventana) {
 		this.ventana = ventana;
 		setLayout(new BorderLayout(0, 0));
@@ -54,7 +57,7 @@ public class PanelMenuABM extends JPanel {
 		cab.setBackground(EstiloUI.C_NAVBAR);
 		cab.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
 
-		JLabel titulo = new JLabel("Carta de la cafetería");
+		JLabel titulo = new JLabel("Carta del café");
 		titulo.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		titulo.setForeground(Color.WHITE);
 		cab.add(titulo, BorderLayout.WEST);
@@ -138,22 +141,15 @@ public class PanelMenuABM extends JPanel {
 		campos.add(new JLabel(""));       campos.add(new JLabel(""));
 		contenedor.add(campos, BorderLayout.CENTER);
 
-		JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
-		botones.setBackground(new Color(248, 242, 234));
-		botones.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, EstiloUI.C_BORDE));
-
 		JButton btnNuevo    = EstiloUI.btnBorde("Limpiar");
 		JButton btnAlta     = EstiloUI.btnVerde("Dar de alta");
-		JButton btnModif    = EstiloUI.btnPrimario("Modificar");
-		JButton btnBaja     = EstiloUI.btnBorde("Baja logica");
+		JButton btnModif    = EstiloUI.btnPrimario("Actualizar");
+		btnEstado           = EstiloUI.btnBorde("Desactivar");
 		JButton btnEliminar = EstiloUI.btnRojo("Eliminar");
 
-		botones.add(btnNuevo);
-		botones.add(btnAlta);
-		botones.add(btnModif);
-		botones.add(btnBaja);
-		botones.add(btnEliminar);
-		contenedor.add(botones, BorderLayout.SOUTH);
+		contenedor.add(EstiloUI.barraAcciones(
+				new JButton[] { btnNuevo, btnAlta, btnModif, btnEstado },
+				btnEliminar), BorderLayout.SOUTH);
 
 		comboTipo.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) { actualizarEtiquetas(); }
@@ -167,8 +163,8 @@ public class PanelMenuABM extends JPanel {
 		btnModif.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) { modificar(); }
 		});
-		btnBaja.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent e) { darDeBaja(); }
+		btnEstado.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) { cambiarEstado(); }
 		});
 		btnEliminar.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) { eliminar(); }
@@ -199,12 +195,12 @@ public class PanelMenuABM extends JPanel {
 	}
 
 	public void refrescar() {
-		try { mostrar(Restaurante.getInstancia().listarMenuCompleto()); }
+		try { mostrar(Cafe.getInstancia().listarMenuCompleto()); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
 	private void buscar() {
-		try { mostrar(Restaurante.getInstancia().buscarProductos(txtBuscar.getText())); }
+		try { mostrar(Cafe.getInstancia().buscarProductos(txtBuscar.getText())); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
@@ -221,6 +217,8 @@ public class PanelMenuABM extends JPanel {
 					item.isDisponible() ? "SI" : "NO",
 					item.getDescripcionDetallada() });
 		}
+		// Recargar la tabla borra la seleccion: el boton tiene que acompañar.
+		actualizarBotonEstado();
 	}
 
 	private ItemMenu getSeleccionado() {
@@ -229,7 +227,23 @@ public class PanelMenuABM extends JPanel {
 		return itemsEnTabla.get(fila);
 	}
 
+	/**
+	 * Deja el boton de estado acorde a la fila elegida: si el producto esta en
+	 * la carta ofrece sacarlo y al reves. Sin seleccion queda deshabilitado.
+	 */
+	private void actualizarBotonEstado() {
+		ItemMenu item = getSeleccionado();
+		if (item == null) {
+			btnEstado.setText("Desactivar");
+			btnEstado.setEnabled(false);
+			return;
+		}
+		btnEstado.setText(item.isDisponible() ? "Desactivar" : "Activar");
+		btnEstado.setEnabled(true);
+	}
+
 	private void cargarSeleccionEnFormulario() {
+		actualizarBotonEstado();
 		ItemMenu item = getSeleccionado();
 		if (item == null) return;
 		txtNombre.setText(item.getNombre());
@@ -252,6 +266,7 @@ public class PanelMenuABM extends JPanel {
 		txtNombre.setText(""); txtPrecio.setText(""); txtNumerico.setText("");
 		chkOpcion.setSelected(false); chkDisponible.setSelected(true);
 		tabla.clearSelection();
+		actualizarBotonEstado();
 	}
 
 	private void darDeAlta() {
@@ -260,9 +275,9 @@ public class PanelMenuABM extends JPanel {
 			int num = leerEntero(txtNumerico.getText(),
 					esPlatoSeleccionado() ? "los minutos" : "los mililitros");
 			if (esPlatoSeleccionado()) {
-				Restaurante.getInstancia().altaPlato(txtNombre.getText(), precio, num, chkOpcion.isSelected());
+				Cafe.getInstancia().altaPlato(txtNombre.getText(), precio, num, chkOpcion.isSelected());
 			} else {
-				Restaurante.getInstancia().altaBebida(txtNombre.getText(), precio, num, chkOpcion.isSelected());
+				Cafe.getInstancia().altaBebida(txtNombre.getText(), precio, num, chkOpcion.isSelected());
 			}
 			ventana.mostrarInfo("Producto dado de alta.");
 			limpiarFormulario(); refrescar();
@@ -285,18 +300,24 @@ public class PanelMenuABM extends JPanel {
 				modificado = new Bebida(sel.getId(), txtNombre.getText().trim(), precio,
 						chkDisponible.isSelected(), num, chkOpcion.isSelected());
 			}
-			Restaurante.getInstancia().modificarProducto(modificado);
+			Cafe.getInstancia().modificarProducto(modificado);
 			ventana.mostrarInfo("Producto modificado.");
 			refrescar();
 		} catch (MontoInvalidoException e) { ventana.mostrarError(e.getMessage());
 		} catch (AccesoDatosException e)    { ventana.mostrarError(e.getMessage()); }
 	}
 
-	private void darDeBaja() {
+	private void cambiarEstado() {
 		ItemMenu sel = getSeleccionado();
 		if (sel == null) { ventana.mostrarError("Seleccione un producto de la tabla."); return; }
-		if (!ventana.confirmar("Sacar '" + sel.getNombre() + "' de la carta?")) return;
-		try { Restaurante.getInstancia().darDeBajaProducto(sel.getId()); refrescar(); }
+
+		boolean activar = !sel.isDisponible();
+		String pregunta = activar
+				? "Volver a poner '" + sel.getNombre() + "' en la carta?"
+				: "Sacar '" + sel.getNombre() + "' de la carta?";
+		if (!ventana.confirmar(pregunta)) return;
+
+		try { Cafe.getInstancia().cambiarDisponibilidad(sel.getId(), activar); refrescar(); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 
@@ -304,7 +325,7 @@ public class PanelMenuABM extends JPanel {
 		ItemMenu sel = getSeleccionado();
 		if (sel == null) { ventana.mostrarError("Seleccione un producto de la tabla."); return; }
 		if (!ventana.confirmar("Eliminar definitivamente '" + sel.getNombre() + "'?")) return;
-		try { Restaurante.getInstancia().eliminarProducto(sel.getId()); limpiarFormulario(); refrescar(); }
+		try { Cafe.getInstancia().eliminarProducto(sel.getId()); limpiarFormulario(); refrescar(); }
 		catch (AccesoDatosException e) { ventana.mostrarError(e.getMessage()); }
 	}
 

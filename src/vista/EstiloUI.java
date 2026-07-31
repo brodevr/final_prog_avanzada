@@ -6,7 +6,7 @@ import javax.swing.border.*;
 import javax.swing.table.*;
 
 /**
- * Sistema de diseño centralizado para la cafetería.
+ * Sistema de diseño centralizado para el café.
  * Todos los paneles usan estas constantes y helpers para garantizar
  * consistencia visual sin duplicar código.
  */
@@ -137,6 +137,36 @@ public final class EstiloUI {
         l.setForeground(C_CAFE);
         p.add(l, BorderLayout.WEST);
         return p;
+    }
+
+    /**
+     * Barra de acciones para los ABM.
+     *
+     * Las acciones habituales van agrupadas a la izquierda y la destructiva se
+     * manda al extremo opuesto. Separarlas no es capricho estetico: evita que
+     * un clic apurado sobre "Desactivar" termine en "Eliminar", que no tiene
+     * vuelta atras. El gap de 12px tambien da aire suficiente para no errarle
+     * al boton de al lado.
+     */
+    public static JPanel barraAcciones(JButton[] habituales, JButton destructivo) {
+        JPanel barra = new JPanel(new BorderLayout());
+        barra.setBackground(new Color(248, 242, 234));
+        barra.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, C_BORDE));
+
+        JPanel izquierda = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 12));
+        izquierda.setOpaque(false);
+        for (JButton boton : habituales) {
+            izquierda.add(boton);
+        }
+        barra.add(izquierda, BorderLayout.WEST);
+
+        if (destructivo != null) {
+            JPanel derecha = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
+            derecha.setOpaque(false);
+            derecha.add(destructivo);
+            barra.add(derecha, BorderLayout.EAST);
+        }
+        return barra;
     }
 
     /** Card con sombra y borde fino, para agrupar contenido. */

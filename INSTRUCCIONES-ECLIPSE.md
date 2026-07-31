@@ -1,6 +1,6 @@
 # Cómo abrir y ejecutar el proyecto en Eclipse
 
-Sistema de Gestión de Restaurante — Examen Final, Programación Avanzada
+Sistema de Gestión de Cafe — Examen Final, Programación Avanzada
 
 > **Antes de empezar:** este código no pasó por un compilador todavía. Si Eclipse marca algún error al importarlo, andá a la sección 8 (Troubleshooting) — están listados los casos típicos y cómo resolverlos.
 
@@ -24,7 +24,7 @@ Si no tenés el Connector/J, se descarga de `dev.mysql.com/downloads/connector/j
 Abrí **MySQL Workbench**, conectate a tu servidor local y:
 
 1. `File` → `Open SQL Script...`
-2. elegí `sql/restaurante_final.sql`
+2. elegí `sql/cafe_final.sql`
 3. ejecutá todo el script con el botón del rayo (⚡) o `Ctrl + Shift + Enter`
 
 El script hace un `DROP DATABASE IF EXISTS` al inicio, así que podés volver a ejecutarlo cuantas veces quieras para dejar todo como al principio.
@@ -33,18 +33,18 @@ Al final vas a ver una tabla de control con estas cifras:
 
 | Control | Cantidad esperada |
 |---|---|
-| Empleados cargados | 4 |
-| Mesas cargadas | 10 |
-| Productos en la carta | 18 |
-| Pedidos históricos | 7 |
-| Líneas de detalle | 18 |
+| Empleados cargados | 8 |
+| Mesas cargadas | 12 |
+| Productos en la carta | 45 |
+| Pedidos históricos | 33 |
+| Líneas de detalle | 76 |
 
 Si ves esos números, la base quedó bien.
 
 **Alternativa por consola:**
 
 ```bash
-mysql -u root -p < sql/restaurante_final.sql
+mysql -u root -p < sql/cafe_final.sql
 ```
 
 ---
@@ -55,8 +55,8 @@ El proyecto ya trae los archivos `.project` y `.classpath`, así que Eclipse lo 
 
 1. `File` → `Import...`
 2. `General` → `Existing Projects into Workspace` → `Next`
-3. En **Select root directory**, apretá `Browse...` y elegí la carpeta `restaurante_final`
-4. Tiene que aparecer `restaurante_final` tildado en la lista de proyectos
+3. En **Select root directory**, apretá `Browse...` y elegí la carpeta `cafe_final`
+4. Tiene que aparecer `cafe_final` tildado en la lista de proyectos
 5. `Finish`
 
 ### Si algo falla en la importación
@@ -64,7 +64,7 @@ El proyecto ya trae los archivos `.project` y `.classpath`, así que Eclipse lo 
 Creá el proyecto a mano, que funciona igual:
 
 1. `File` → `New` → `Java Project`
-2. Nombre: `restaurante_final`, `Finish`
+2. Nombre: `cafe_final`, `Finish`
 3. En el explorador de Windows, copiá **el contenido** de la carpeta `src/` del entregable
 4. Pegalo dentro de la carpeta `src` del proyecto nuevo en Eclipse
 5. Clic derecho en el proyecto → `Refresh` (o F5)
@@ -93,7 +93,7 @@ Abrí `src/conexion/ConexionBD.java`. Arriba de la clase están las tres constan
 
 ```java
 private static final String URL =
-        "jdbc:mysql://localhost:3306/restaurante_final?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires";
+        "jdbc:mysql://localhost:3306/cafe_final?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires";
 private static final String USUARIO = "root";
 private static final String CLAVE = "";
 ```
@@ -107,14 +107,23 @@ Vienen configuradas para **root sin clave**. Si tu MySQL tiene clave, ponela en 
 1. Abrí `src/Main.java`
 2. Clic derecho → `Run As` → `Java Application`
 
-Se abre la pantalla de login. Usuarios de prueba, todos con clave **1234**:
+Se abre la pantalla de login. Hay **dos perfiles** y lo que se ve cambia según con cuál entres:
 
-| Usuario | Nombre | Estado |
-|---|---|---|
-| `mrodriguez` | Martin Rodriguez | activo |
-| `lgomez` | Lucia Gomez | activo |
-| `dfernandez` | Diego Fernandez | activo |
-| `sruiz` | Sofia Ruiz | **dado de baja** — sirve para probar que no puede entrar |
+| Usuario | Clave | Perfil | Qué ve |
+|---|---|---|---|
+| `admin` | `admin123` | Administrador | Todo: salón, Carta, Empleados y Reportes |
+| `empleado` | `emp123` | Empleado | Solo el salón y las comandas |
+
+Estas dos son las cuentas de prueba y están al pie de la pantalla de login, para no tener que buscarlas. El resto del personal usa clave **1234**:
+
+| Usuario | Nombre | Perfil | Estado |
+|---|---|---|---|
+| `mrodriguez` | Martin Rodriguez | Administrador | activo |
+| `lgomez` | Lucia Gomez | Empleado | activo |
+| `dfernandez` | Diego Fernandez | Empleado | activo |
+| `alopez` | Ana Lopez | Empleado | activo |
+| `cmendez` | Carlos Mendez | Empleado | activo |
+| `sruiz` | Sofia Ruiz | Empleado | **desactivado** — sirve para probar que no puede entrar |
 
 ---
 
@@ -135,7 +144,7 @@ JUnit **no** es un requisito de este examen, así que si te da problemas podés 
 | *"No se encontró el driver de MySQL"* | El jar no está en el Build Path | Repetir el paso 3 |
 | `Communications link failure` | El servidor MySQL está apagado | Iniciar el servicio MySQL desde Servicios de Windows o desde Workbench |
 | `Access denied for user 'root'@'localhost'` | Usuario o clave incorrectos | Corregir `USUARIO` / `CLAVE` en `ConexionBD` |
-| `Unknown database 'restaurante_final'` | No se ejecutó el script SQL | Volver al paso 1 |
+| `Unknown database 'cafe_final'` | No se ejecutó el script SQL | Volver al paso 1 |
 | `Public Key Retrieval is not allowed` | Configuración de MySQL 8 | Agregar `&allowPublicKeyRetrieval=true` al final de la `URL` |
 | `The server time zone value ... is unrecognized` | Zona horaria del servidor | Cambiar `serverTimezone=America/Argentina/Buenos_Aires` por `serverTimezone=UTC` |
 | Errores rojos en el paquete `test` | Falta JUnit 5 | Ver paso 6, o borrar el paquete `test` |
@@ -151,54 +160,67 @@ JUnit **no** es un requisito de este examen, así que si te da problemas podés 
 
 Este recorrido toca todos los requisitos de la consigna. Serví también para sacar las capturas de pantalla que hay que entregar.
 
-**1. Login** — entrá con `mrodriguez` / `1234`.
-Probá primero con `sruiz` / `1234`: tiene que rechazarte porque está dada de baja.
+> Los números de mesa y de producto de abajo son los que deja el script recién
+> ejecutado. Si ya estuviste probando la app, volvé a correrlo para reproducirlos.
 
-**2. El salón** — vas a ver 10 mesas. Nueve verdes y **la mesa 7 en rojo**, porque el script deja una cuenta abierta a propósito.
-📷 *Captura 1: el plano del salón.*
+**1. Login y control de acceso** — probá los tres casos, en este orden:
 
-**3. Retomar una cuenta existente** — hacé clic en la mesa 7. Se abre su comanda con tres consumos ya cargados. Fijate en la columna **Detalle**: cada fila dice algo distinto según sea plato o bebida. Ese es el polimorfismo funcionando.
-📷 *Captura 2: la comanda de la mesa 7.*
+- `sruiz` / `1234` → **rechazado**, porque está desactivado
+- `empleado` / `emp123` → entra, pero en la barra superior **solo** hay `Cerrar sesion` y `Salir`: un mozo no administra la carta ni ve la facturación
+- `admin` / `admin123` → entra y ahora **sí** aparecen `Carta`, `Empleados` y `Reportes`
 
-**4. Abrir una mesa nueva** — volvé al salón y hacé clic en la mesa 3. Se abre una cuenta nueva y la mesa pasa a rojo.
+📷 *Captura 1: el login.*
+📷 *Captura 2: el salón visto por `empleado` y por `admin`, para mostrar la diferencia.*
 
-**5. Cargar consumos** — agregá 2 milanesas napolitanas y 1 cerveza. Mirá cómo se actualizan el total y la **demora estimada** (25 minutos: el máximo entre los 25 de la milanesa y los 2 de la cerveza, no la suma).
+**2. El salón** — 12 mesas en cuatro sectores (Salón, Terraza, Barra, Privado). Nueve verdes y **tres en rojo: la 2, la 7 y la 9**, porque el script deja esas cuentas abiertas a propósito.
+📷 *Captura 3: el plano del salón.*
 
-**6. Probar las excepciones** — vale la pena mostrar estas tres en la defensa:
+**3. Retomar una cuenta existente** — clic en la **mesa 7**: se abre su comanda con dos consumos ya cargados. Fijate en la columna **Detalle**: cada fila dice algo distinto según sea plato o bebida. Ese es el polimorfismo funcionando.
+📷 *Captura 4: la comanda de la mesa 7.*
 
-- poné cantidad `0` y agregá → *"La cantidad debe ser mayor que cero"* (`MontoInvalidoException`)
-- poné cantidad `abc` → *"La cantidad debe ser un número entero"*
-- volvé al salón sin cerrar, y desde el ABM del menú intentá **eliminar** una milanesa → falla porque ya se vendió, y te sugiere la baja lógica
+**4. Abrir una mesa nueva** — volvé al salón y hacé clic en la **mesa 4**, que está libre. Se abre una cuenta nueva y la mesa pasa a rojo.
+
+**5. Cargar consumos** — agregá 2 `Tostado de jamon y queso` y 1 `Cortado`. Mirá cómo se actualizan el total y la **demora estimada**: da **10 minutos**, que es el máximo entre los 10 del tostado y los 2 de la bebida, no la suma.
+
+**6. Probar las excepciones** — las tres que conviene mostrar en la defensa:
+
+- cantidad `0` → *"La cantidad debe ser mayor que cero"* (`MontoInvalidoException`)
+- cantidad `abc` → *"La cantidad debe ser un número entero"*
+- volvé al salón sin cerrar y, desde `Carta`, intentá **Eliminar** la `Medialuna de manteca (3u)` → falla porque ya se vendió, y te sugiere desactivarla en lugar de borrarla. Para contraste, un producto nuevo que nunca se vendió sí se puede eliminar.
 
 **7. Aplicar un descuento** — elegí `Descuento 10%` y apretá `Aplicar`. El total baja.
-📷 *Captura 3: la comanda con descuento aplicado.*
+📷 *Captura 5: la comanda con descuento aplicado.*
 
-**8. Cerrar la cuenta** — `Cobrar y cerrar cuenta` → confirmá. Aparece el ticket, y al volver al salón la mesa 3 está verde otra vez.
-📷 *Captura 4: el ticket de consumo.*
+**8. Cerrar la cuenta** — `Cobrar y cerrar cuenta` → confirmá. Aparece el ticket, y al volver al salón la mesa 4 está verde otra vez.
+Desde el ticket, el botón **Imprimir** abre el diálogo de impresión de Windows. Si no tenés impresora, elegí *Microsoft Print to PDF* y guardalo: sirve como captura.
+📷 *Captura 6: el ticket de consumo.*
 
-**9. Probar que el ciclo se respeta** — la cuenta que acabás de cerrar ya no se puede modificar. Si volvés a la mesa 3 se abre una cuenta **nueva**, no la anterior.
+**9. Probar que el ciclo se respeta** — la cuenta que acabás de cerrar ya no se puede modificar. Si volvés a la mesa 4 se abre una cuenta **nueva**, no la anterior.
 
-**10. ABM del menú** — `Carta / Menu`. Dá de alta un postre nuevo, modificalo, buscalo por nombre, y dalo de baja. Fijate en la columna **Precio final**: es distinta del precio base según el recargo que aplica cada subclase.
-📷 *Captura 5: el ABM de la carta.*
+**10. ABM de la carta** — `Carta`. Dá de alta un producto nuevo, actualizalo, buscalo por nombre y desactivalo. Fijate en dos cosas:
+- la columna **Precio final** es distinta del precio base según el recargo de cada subclase (los platos que no son entrada y las bebidas con alcohol tienen recargo);
+- el botón de estado **cambia solo**: dice `Desactivar` si el producto está en la carta y `Activar` si no, así que también podés volver a subirlo.
 
-**11. ABM de empleados** — `Empleados`. Mismo recorrido: alta, modificación, búsqueda, baja.
-📷 *Captura 6: el ABM de empleados.*
+📷 *Captura 7: el ABM de la carta.*
 
-**12. Reportes** — `Reportes`. Poné como rango desde el primer día del mes hasta hoy y generá los cuatro:
+**11. ABM de empleados** — `Empleados`. Mismo recorrido: alta, actualización, búsqueda y desactivación. Acá además se asigna el **Perfil** (Administrador o Empleado). Probá desactivar a `sruiz` y volver a activarla.
+📷 *Captura 8: el ABM de empleados.*
+
+**12. Reportes** — `Reportes`. Poné como rango desde hace una semana hasta hoy y generá los cuatro:
 
 - **Facturación por período** — día por día
 - **Productos más vendidos** — top 5 y el producto estrella (acá corre el método genérico)
 - **Ventas por mozo**
 - **Ticket promedio**
 
-Notá que el pedido **anulado** de la mesa 4 no figura en ningún total, y que la cuenta abierta de la mesa 7 tampoco.
-📷 *Captura 7 y 8: dos reportes distintos.*
+Notá que el pedido **anulado de la mesa 10** no figura en ningún total, y que las cuentas todavía abiertas (mesas 2, 7 y 9) tampoco: solo se factura lo cerrado.
+📷 *Captura 9 y 10: dos reportes distintos.*
 
 ---
 
 ## 10. Qué falta para entregar
 
-- [ ] Sacar las capturas de pantalla del recorrido de la sección 9
-- [ ] Exportar los diagramas de `docs/*.mermaid` a imagen — pegá el contenido en `mermaid.live` y descargá el PNG
-- [ ] Poner tu nombre y tu división en la portada de `docs/documentacion.md`
+- [ ] Sacar las capturas de pantalla del recorrido de la sección 9 (son 10)
+- [ ] Exportar los diagramas de `docs/*.mermaid` a imagen — pegá el contenido en `mermaid.live` y descargá el PNG. La consigna pide el diagrama de clases como entregable, y un `.mermaid` es texto: no se ve en Word ni en PDF.
+- [ ] Completar la división en la portada de `docs/documentacion.md` (el nombre ya está)
 - [ ] Comprimir todo en un ZIP: `src/`, `sql/`, `docs/` y este archivo

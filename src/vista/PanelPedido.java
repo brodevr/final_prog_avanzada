@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import controlador.Caja;
-import controlador.Restaurante;
+import controlador.Cafe;
 import excepciones.AccesoDatosException;
 import excepciones.ItemNoDisponibleException;
 import excepciones.MontoInvalidoException;
@@ -217,7 +217,7 @@ public class PanelPedido extends JPanel {
 	private void cargarProductosDisponibles() {
 		comboProductos.removeAllItems();
 		try {
-			for (ItemMenu item : Restaurante.getInstancia().listarMenuDisponible()) {
+			for (ItemMenu item : Cafe.getInstancia().listarMenuDisponible()) {
 				comboProductos.addItem(item);
 			}
 		} catch (AccesoDatosException e) {

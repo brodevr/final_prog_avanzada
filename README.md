@@ -1,9 +1,9 @@
-# Sistema de Gestión de Restaurante
+# Sistema de Gestión de Cafe
 
 Examen Final — **Programación Avanzada**
 Analista en Sistemas · Escuela Superior de Arte Multimedial Da Vinci
 
-Aplicación de escritorio en Java para administrar la operación diaria de un restaurante: el estado de las mesas del salón, la carta, el personal, y el ciclo completo de una cuenta desde que se abre la mesa hasta que se cobra.
+Aplicación de escritorio en Java para administrar la operación diaria de un cafe: el estado de las mesas del salón, la carta, el personal, y el ciclo completo de una cuenta desde que se abre la mesa hasta que se cobra.
 
 ---
 
@@ -21,7 +21,7 @@ Aplicación de escritorio en Java para administrar la operación diaria de un re
 
 ```bash
 # 1. Crear la base de datos
-mysql -u root -p < sql/restaurante_final.sql
+mysql -u root -p < sql/cafe_final.sql
 
 # 2. Importar en Eclipse: File > Import > Existing Projects into Workspace
 # 3. Agregar mysql-connector-j.jar al Build Path
@@ -41,7 +41,7 @@ src/
 ├── excepciones/   Las cinco excepciones propias del sistema
 ├── conexion/      ConexionBD, el Singleton de acceso a MySQL
 ├── dao/           Un DAO por entidad, más ReporteDAO
-├── controlador/   Restaurante y Caja: lógica de negocio y validaciones
+├── controlador/   Cafe y Caja: lógica de negocio y validaciones
 ├── vista/         VentanaPrincipal y los siete paneles
 ├── util/          ColeccionUtil, con los métodos genéricos
 └── test/          26 pruebas JUnit 5 del modelo de dominio
@@ -101,7 +101,7 @@ Se visualizan pegando el contenido en [mermaid.live](https://mermaid.live).
 | Colecciones genéricas | `ArrayList<DetallePedido>`, `HashMap<Integer, Mesa>` |
 | Método genérico | `ColeccionUtil.obtenerMaximo()`, `primerosN()` |
 | JDBC + CRUD completo | 5 DAO sobre 5 tablas |
-| Singleton | `ConexionBD`, `Restaurante`, `Caja` |
+| Singleton | `ConexionBD`, `Cafe`, `Caja` |
 | Patrón adicional | Strategy en `promociones/` |
 | Interfaz gráfica JFrame | `VentanaPrincipal` con `CardLayout` |
 | Reportes y estadísticas | 4 reportes con filtro por fechas en SQL |

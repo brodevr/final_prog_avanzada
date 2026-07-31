@@ -49,7 +49,8 @@ public class VentanaPrincipal extends JFrame {
 	private PanelTicket panelTicket;
 
 	public VentanaPrincipal() {
-		setTitle("Cafetería La Esquina - Sistema de Gestión");
+		setTitle("Café La Esquina - Sistema de Gestión");
+		setIconImages(IconoCafe.iconosVentana(EstiloUI.C_CARAMEL));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(1060, 680));
 		setMinimumSize(new Dimension(920, 600));
@@ -95,17 +96,41 @@ public class VentanaPrincipal extends JFrame {
 	}
 
 	public void irAMenu() {
+		if (!exigirAdmin()) {
+			return;
+		}
 		panelMenuABM.refrescar();
 		cardLayout.show(contenedor, MENU_ABM);
 	}
 
 	public void irAEmpleados() {
+		if (!exigirAdmin()) {
+			return;
+		}
 		panelEmpleadosABM.refrescar();
 		cardLayout.show(contenedor, EMPLEADOS_ABM);
 	}
 
 	public void irAReportes() {
+		if (!exigirAdmin()) {
+			return;
+		}
 		cardLayout.show(contenedor, REPORTES);
+	}
+
+	/**
+	 * Corta el paso a las pantallas de gestion si quien opera no es ADMIN.
+	 *
+	 * PanelMesas ya le esconde esos botones al mozo, pero ocultar un boton no
+	 * es un control de acceso: esta validacion es la que realmente decide, y
+	 * queda en un solo lugar por el que pasan las tres pantallas.
+	 */
+	private boolean exigirAdmin() {
+		if (empleadoActual != null && empleadoActual.esAdmin()) {
+			return true;
+		}
+		mostrarError("Esta seccion es solo para usuarios administradores.");
+		return false;
 	}
 
 	public void irATicket(String texto) {
@@ -149,9 +174,10 @@ public class VentanaPrincipal extends JFrame {
 	public void setEmpleadoActual(Empleado empleadoActual) {
 		this.empleadoActual = empleadoActual;
 		if (empleadoActual != null) {
-			setTitle("Cafetería La Esquina  |  " + empleadoActual.getNombre());
+			setTitle("Café La Esquina  |  " + empleadoActual.getNombre()
+					+ "  (" + empleadoActual.getRol().getEtiqueta() + ")");
 		} else {
-			setTitle("Cafetería La Esquina - Sistema de Gestión");
+			setTitle("Café La Esquina - Sistema de Gestión");
 		}
 	}
 

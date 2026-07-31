@@ -1,7 +1,7 @@
 package modelo;
 
 /**
- * Producto ofrecido por el restaurante. Es la clase abstracta del sistema.
+ * Producto ofrecido por el cafe. Es la clase abstracta del sistema.
  *
  * Es abstracta porque un "item de menu" generico no existe en la realidad:
  * lo que existe son platos y bebidas. Concentra el estado y el comportamiento

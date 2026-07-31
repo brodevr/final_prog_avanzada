@@ -1,26 +1,30 @@
 -- =====================================================================
 -- EXAMEN FINAL - PROGRAMACION AVANZADA
--- Sistema de Gestion de Cafeteria
+-- Sistema de Gestion de Cafe
 --
 -- Ejecutar completo en MySQL Workbench o por consola:
---   mysql -u root -p < restaurante_final.sql
+--   mysql -u root -p < cafe_final.sql
 -- =====================================================================
 
-DROP DATABASE IF EXISTS restaurante_final;
-CREATE DATABASE restaurante_final
+DROP DATABASE IF EXISTS cafe_final;
+CREATE DATABASE cafe_final
 	CHARACTER SET utf8mb4
 	COLLATE utf8mb4_unicode_ci;
-USE restaurante_final;
+USE cafe_final;
 
 -- ---------------------------------------------------------------------
 -- EMPLEADO
 -- ---------------------------------------------------------------------
+-- El rol define que puede hacer cada uno una vez que inicia sesion:
+--   ADMIN    -> atiende mesas y ademas administra carta, personal y reportes
+--   EMPLEADO -> solo salon y comandas
 CREATE TABLE empleado (
 	id      INT AUTO_INCREMENT PRIMARY KEY,
 	nombre  VARCHAR(80) NOT NULL,
 	usuario VARCHAR(30) NOT NULL UNIQUE,
 	clave   VARCHAR(30) NOT NULL,
-	activo  BOOLEAN NOT NULL DEFAULT TRUE
+	activo  BOOLEAN NOT NULL DEFAULT TRUE,
+	rol     ENUM('ADMIN', 'EMPLEADO') NOT NULL DEFAULT 'EMPLEADO'
 );
 
 -- ---------------------------------------------------------------------
@@ -90,13 +94,22 @@ CREATE TABLE detalle_pedido (
 -- =====================================================================
 
 -- --- Empleados (clave de todos: 1234) --------------------------------
-INSERT INTO empleado (nombre, usuario, clave, activo) VALUES
-	('Martin Rodriguez',  'mrodriguez', '1234', TRUE),
-	('Lucia Gomez',       'lgomez',     '1234', TRUE),
-	('Diego Fernandez',   'dfernandez', '1234', TRUE),
-	('Ana Lopez',         'alopez',     '1234', TRUE),
-	('Carlos Mendez',     'cmendez',    '1234', TRUE),
-	('Sofia Ruiz',        'sruiz',      '1234', FALSE);
+-- IMPORTANTE: estos seis van primero y en este orden porque los pedidos
+-- historicos de mas abajo referencian empleado_id 1..6 a mano. Si se agrega
+-- gente nueva, va al final para no correr los ids.
+INSERT INTO empleado (nombre, usuario, clave, activo, rol) VALUES
+	('Martin Rodriguez',  'mrodriguez', '1234', TRUE,  'ADMIN'),
+	('Lucia Gomez',       'lgomez',     '1234', TRUE,  'EMPLEADO'),
+	('Diego Fernandez',   'dfernandez', '1234', TRUE,  'EMPLEADO'),
+	('Ana Lopez',         'alopez',     '1234', TRUE,  'EMPLEADO'),
+	('Carlos Mendez',     'cmendez',    '1234', TRUE,  'EMPLEADO'),
+	('Sofia Ruiz',        'sruiz',      '1234', FALSE, 'EMPLEADO');
+
+-- Cuentas de prueba de cada perfil: entrar con una y con la otra alcanza para
+-- ver la diferencia de permisos. Van al final para no correr los ids de arriba.
+INSERT INTO empleado (nombre, usuario, clave, activo, rol) VALUES
+	('Admin del Sistema',  'admin',    'admin123', TRUE, 'ADMIN'),
+	('Empleado de Prueba', 'empleado', 'emp123',   TRUE, 'EMPLEADO');
 
 -- --- Mesas -----------------------------------------------------------
 -- Sectores: Salon (interior), Terraza (exterior), Barra, Privado
@@ -169,6 +182,38 @@ INSERT INTO item_menu (tipo, nombre, precio_base, disponible, minutos_preparacio
 	('BEBIDA', 'Agua mineral',       1200.00, TRUE, NULL, NULL, 500,  FALSE),
 	('BEBIDA', 'Jugo de naranja',    3200.00, TRUE, NULL, NULL, 350,  FALSE),
 	('BEBIDA', 'Cerveza artesanal',  4500.00, TRUE, NULL, NULL, 473,  TRUE);
+
+-- --- Clasicos de cafe porteno ------------------------------------------
+-- Van despues de los anteriores para no correr los ids 1..20, que los
+-- pedidos historicos de mas abajo referencian a mano.
+INSERT INTO item_menu (tipo, nombre, precio_base, disponible, minutos_preparacion, es_entrada, mililitros, alcoholica) VALUES
+	('PLATO', 'Factura surtida (6u)',            4200.00, TRUE,  5,  TRUE,  NULL, NULL),
+	('PLATO', 'Medialuna de grasa (3u)',         2000.00, TRUE,  5,  TRUE,  NULL, NULL),
+	('PLATO', 'Churros con dulce de leche (3u)', 3600.00, TRUE,  8,  FALSE, NULL, NULL),
+	('PLATO', 'Alfajor de maicena',              1800.00, TRUE,  2,  TRUE,  NULL, NULL),
+	('PLATO', 'Vigilante (queso y dulce)',       3000.00, TRUE,  3,  TRUE,  NULL, NULL),
+	('PLATO', 'Sandwich de miga triple (3u)',    4200.00, TRUE,  5,  FALSE, NULL, NULL),
+	('PLATO', 'Tostado de jamon y queso',        3900.00, TRUE,  10, FALSE, NULL, NULL),
+	('PLATO', 'Scon de queso (2u)',              2600.00, TRUE,  6,  TRUE,  NULL, NULL),
+	('PLATO', 'Tarta de jamon y queso',          4400.00, TRUE,  12, FALSE, NULL, NULL),
+	('PLATO', 'Chocotorta',                      4800.00, TRUE,  3,  FALSE, NULL, NULL),
+	('PLATO', 'Torta rogel',                     5200.00, TRUE,  3,  FALSE, NULL, NULL),
+	('PLATO', 'Lemon pie',                       4600.00, TRUE,  3,  FALSE, NULL, NULL),
+	('PLATO', 'Budin de pan con dulce de leche', 3400.00, TRUE,  3,  FALSE, NULL, NULL);
+
+INSERT INTO item_menu (tipo, nombre, precio_base, disponible, minutos_preparacion, es_entrada, mililitros, alcoholica) VALUES
+	('BEBIDA', 'Cafe lagrima',            2000.00, TRUE, NULL, NULL, 200,  FALSE),
+	('BEBIDA', 'Jarrito de cafe',         2200.00, TRUE, NULL, NULL, 180,  FALSE),
+	('BEBIDA', 'Mate cocido',             1600.00, TRUE, NULL, NULL, 300,  FALSE),
+	('BEBIDA', 'Chocolate caliente',      3000.00, TRUE, NULL, NULL, 280,  FALSE),
+	('BEBIDA', 'Licuado de banana',       3800.00, TRUE, NULL, NULL, 400,  FALSE),
+	('BEBIDA', 'Exprimido de pomelo',     3300.00, TRUE, NULL, NULL, 350,  FALSE),
+	('BEBIDA', 'Gaseosa linea Coca-Cola', 2200.00, TRUE, NULL, NULL, 500,  FALSE),
+	('BEBIDA', 'Soda de sifon',           1200.00, TRUE, NULL, NULL, 500,  FALSE),
+	('BEBIDA', 'Agua saborizada',         1800.00, TRUE, NULL, NULL, 500,  FALSE),
+	('BEBIDA', 'Fernet con coca',         5200.00, TRUE, NULL, NULL, 400,  TRUE),
+	('BEBIDA', 'Copa de Malbec',          4800.00, TRUE, NULL, NULL, 150,  TRUE),
+	('BEBIDA', 'Aperitivo Gancia',        4200.00, TRUE, NULL, NULL, 200,  TRUE);
 
 -- =====================================================================
 -- PEDIDOS HISTORICOS
@@ -306,7 +351,7 @@ INSERT INTO detalle_pedido (pedido_id, item_id, cantidad, precio_unitario) VALUE
 UPDATE mesa SET ocupada = TRUE WHERE numero = 7;
 
 -- =====================================================================
--- HISTORIAL 7 DIAS: cafeteria activa con clientes reales
+-- HISTORIAL 7 DIAS: cafe activa con clientes reales
 -- Precios unitarios = precio FINAL (con recargo ya incluido)
 -- =====================================================================
 

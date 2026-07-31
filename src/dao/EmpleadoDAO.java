@@ -11,6 +11,7 @@ import java.util.List;
 import conexion.ConexionBD;
 import excepciones.AccesoDatosException;
 import modelo.Empleado;
+import modelo.Rol;
 
 /**
  * Acceso a datos de la tabla empleado (patron DAO).
@@ -23,7 +24,7 @@ import modelo.Empleado;
 public class EmpleadoDAO {
 
 	public void insertar(Empleado empleado) throws AccesoDatosException {
-		String sql = "INSERT INTO empleado (nombre, usuario, clave, activo) VALUES (?, ?, ?, ?)";
+		String sql = "INSERT INTO empleado (nombre, usuario, clave, activo, rol) VALUES (?, ?, ?, ?, ?)";
 		Connection conexion = ConexionBD.getInstancia().getConexion();
 
 		try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -31,6 +32,7 @@ public class EmpleadoDAO {
 			ps.setString(2, empleado.getUsuario());
 			ps.setString(3, empleado.getClave());
 			ps.setBoolean(4, empleado.isActivo());
+			ps.setString(5, empleado.getRol().name());
 			ps.executeUpdate();
 
 			try (ResultSet claves = ps.getGeneratedKeys()) {
@@ -45,7 +47,7 @@ public class EmpleadoDAO {
 	}
 
 	public void actualizar(Empleado empleado) throws AccesoDatosException {
-		String sql = "UPDATE empleado SET nombre = ?, usuario = ?, clave = ?, activo = ? WHERE id = ?";
+		String sql = "UPDATE empleado SET nombre = ?, usuario = ?, clave = ?, activo = ?, rol = ? WHERE id = ?";
 		Connection conexion = ConexionBD.getInstancia().getConexion();
 
 		try (PreparedStatement ps = conexion.prepareStatement(sql)) {
@@ -53,7 +55,8 @@ public class EmpleadoDAO {
 			ps.setString(2, empleado.getUsuario());
 			ps.setString(3, empleado.getClave());
 			ps.setBoolean(4, empleado.isActivo());
-			ps.setInt(5, empleado.getId());
+			ps.setString(5, empleado.getRol().name());
+			ps.setInt(6, empleado.getId());
 			ps.executeUpdate();
 		} catch (SQLException e) {
 			throw new AccesoDatosException("No se pudo modificar el empleado.", e);
@@ -79,14 +82,24 @@ public class EmpleadoDAO {
 
 	/** Baja logica: el empleado deja de poder operar pero conserva su historia. */
 	public void darDeBaja(int id) throws AccesoDatosException {
-		String sql = "UPDATE empleado SET activo = FALSE WHERE id = ?";
+		cambiarEstado(id, false);
+	}
+
+	/**
+	 * Activa o desactiva al empleado sin borrarlo. Es la baja logica, pero en
+	 * los dos sentidos: un empleado desactivado no puede iniciar sesion y
+	 * conserva sus pedidos, y se lo puede volver a habilitar cuando reingresa.
+	 */
+	public void cambiarEstado(int id, boolean activo) throws AccesoDatosException {
+		String sql = "UPDATE empleado SET activo = ? WHERE id = ?";
 		Connection conexion = ConexionBD.getInstancia().getConexion();
 
 		try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-			ps.setInt(1, id);
+			ps.setBoolean(1, activo);
+			ps.setInt(2, id);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			throw new AccesoDatosException("No se pudo dar de baja el empleado.", e);
+			throw new AccesoDatosException("No se pudo cambiar el estado del empleado.", e);
 		}
 	}
 
@@ -176,6 +189,7 @@ public class EmpleadoDAO {
 				rs.getString("nombre"),
 				rs.getString("usuario"),
 				rs.getString("clave"),
-				rs.getBoolean("activo"));
+				rs.getBoolean("activo"),
+				Rol.desdeTexto(rs.getString("rol")));
 	}
 }

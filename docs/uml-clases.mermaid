@@ -1,5 +1,5 @@
 %% =====================================================================
-%% DIAGRAMA DE CLASES UML - Sistema de Gestion de Cafeteria La Esquina
+%% DIAGRAMA DE CLASES UML - Sistema de Gestion de Cafe La Esquina
 %% Examen Final - Programacion Avanzada
 %%
 %% Para verlo: pegar el contenido en https://mermaid.live
@@ -89,6 +89,17 @@ classDiagram
         -String usuario
         -String clave
         -boolean activo
+        -Rol rol
+        +esAdmin() boolean
+    }
+
+    class Rol {
+        <<enumeration>>
+        ADMIN
+        EMPLEADO
+        -String etiqueta
+        +getEtiqueta() String
+        +desdeTexto(String) Rol
     }
 
     %% ---------------- Reportes ----------------
@@ -137,7 +148,7 @@ classDiagram
         +anularCuenta(Pedido)
     }
 
-    class Restaurante {
+    class Cafe {
         <<singleton>>
         -Map~Integer,Mesa~ mesasPorNumero
         +iniciarSesion(String, String) Empleado
@@ -167,6 +178,7 @@ classDiagram
     Pedido --> Descuento
     Pedido "0..*" --> "1" Mesa
     Pedido "0..*" --> "1" Empleado
+    Empleado --> Rol
     DetallePedido "0..*" --> "1" ItemMenu
 
     ReporteDAO ..> RankingItem
@@ -188,6 +200,6 @@ classDiagram
     Caja --> PedidoDAO
     Caja --> MesaDAO
     Caja --> ReporteDAO
-    Restaurante --> ItemMenuDAO
-    Restaurante --> MesaDAO
-    Restaurante --> EmpleadoDAO
+    Cafe --> ItemMenuDAO
+    Cafe --> MesaDAO
+    Cafe --> EmpleadoDAO
